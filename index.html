@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compliance Tracker</title>
+<style>
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+  #root { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 500; }
+  h1 { font-size: 22px; }
+  h2 { font-size: 14px; color: #334155; margin-bottom: 10px; }
+  h3 { font-size: 14px; }
+  button { font-family: inherit; font-size: 13px; cursor: pointer; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: white; color: #0f172a; transition: background 0.15s; }
+  button:hover:not(:disabled) { background: #f1f5f9; }
+  button.primary { background: #0f172a; color: white; border-color: #0f172a; }
+  button.primary:hover { background: #1e293b; }
+  button.tab { border: none; background: transparent; padding: 8px 14px; border-bottom: 2px solid transparent; border-radius: 0; color: #64748b; }
+  button.tab.active { border-bottom-color: #0f172a; color: #0f172a; font-weight: 500; }
+  button.chip { padding: 6px 12px; border: 1px solid #e2e8f0; }
+  button.chip.active { background: #0f172a; color: white; border-color: #0f172a; }
+  input, select, textarea { font-family: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #0f172a; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .grid-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; }
+  .stat { padding: 12px; border-radius: 6px; border: 1px solid; }
+  .stat .v { font-size: 22px; font-weight: 500; }
+  .stat .l { font-size: 11px; margin-top: 2px; }
+  .stat.red { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+  .stat.amber { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+  .stat.yellow { background: #fefce8; color: #a16207; border-color: #fef08a; }
+  .stat.slate { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+  .stat.green { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+  .task-row { padding: 10px 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; }
+  .task-row:last-child { border-bottom: none; }
+  .task-row:hover { background: #f8fafc; }
+  .task-name { flex: 1; font-size: 13px; }
+  .task-name.done { text-decoration: line-through; color: #94a3b8; }
+  .task-meta { font-size: 11px; color: #64748b; }
+  .task-due { font-size: 12px; color: #475569; text-align: right; }
+  .task-due .countdown { font-size: 11px; }
+  .countdown.overdue { color: #b91c1c; }
+  .countdown.urgent { color: #b45309; }
+  .countdown.upcoming { color: #a16207; }
+  .countdown.future { color: #64748b; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.overdue { background: #ef4444; }
+  .dot.urgent { background: #f59e0b; }
+  .dot.upcoming { background: #eab308; }
+  .dot.future { background: #94a3b8; }
+  .dot.done { background: #22c55e; }
+  .checkbox { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #94a3b8; cursor: pointer; flex-shrink: 0; padding: 0; background: white; }
+  .checkbox:hover { border-color: #0f172a; }
+  .checkbox.done { background: #22c55e; border-color: #22c55e; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .nav { display: flex; border-bottom: 1px solid #e2e8f0; margin: 16px 0; gap: 4px; flex-wrap: wrap; }
+  .companies { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+  .modal { background: white; border-radius: 10px; max-width: 480px; width: 100%; max-height: 90vh; overflow: auto; }
+  .modal-head { padding: 14px 18px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-body { padding: 18px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: #334155; margin-bottom: 4px; }
+  .req-row { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 12px; align-items: flex-start; }
+  .req-row:last-child { border-bottom: none; }
+  .badge { font-size: 11px; padding: 2px 8px; background: #f1f5f9; color: #475569; border-radius: 9999px; flex-shrink: 0; }
+  .calendar { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: white; }
+  .cal-head { padding: 6px; font-size: 11px; font-weight: 500; text-align: center; background: #f8fafc; color: #475569; border-bottom: 1px solid #e2e8f0; }
+  .cal-day { min-height: 80px; padding: 6px; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+  .cal-day .num { font-size: 11px; color: #64748b; }
+  .cal-day.today .num { color: #2563eb; font-weight: 500; }
+  .cal-day.today { background: #eff6ff; }
+  .cal-day .ev { font-size: 10px; padding: 2px 4px; border-radius: 3px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev.overdue { background: #fef2f2; color: #b91c1c; }
+  .ev.urgent { background: #fffbeb; color: #b45309; }
+  .ev.upcoming { background: #fefce8; color: #a16207; }
+  .ev.future { background: #f8fafc; color: #475569; }
+  .ev.done { background: #f0fdf4; color: #15803d; text-decoration: line-through; opacity: 0.6; }
+  .empty { padding: 32px; text-align: center; color: #94a3b8; font-size: 13px; }
+  .icon-btn { background: transparent; border: none; padding: 4px; color: #94a3b8; cursor: pointer; }
+  .icon-btn:hover { color: #ef4444; }
+  .country-tag { font-size: 11px; opacity: 0.7; margin-left: 6px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 11px; color: #64748b; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  @media print {
+    body { background: white; }
+    .no-print { display: none !important; }
+    .modal-bg { position: static; background: transparent; padding: 0; }
+    .modal { max-width: 100%; box-shadow: none; }
+  }
+  .report { padding: 20px; }
+  .report h1 { font-size: 18px; }
+  .report-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+  .report-stat { padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; }
+  .report-stat .v { font-size: 20px; font-weight: 500; }
+  .report-stat .l { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .report-section { margin: 16px 0; }
+  .report-section h3 { padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
+  .report-section.highlight h3 { border-bottom-color: #fca5a5; color: #991b1b; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table th { text-align: left; font-weight: 400; color: #64748b; padding: 4px 6px; }
+  table td { padding: 4px 6px; border-top: 1px solid #f1f5f9; }
+  table td.right { text-align: right; }
+  @media (max-width: 720px) {
+    .grid-stats { grid-template-columns: repeat(2, 1fr); }
+    .report-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+// =============================================================================
+// COMPLIANCE TRACKER — single-file static webapp
+// Storage: browser localStorage (per-device, per-browser).
+// To sync across devices, see HANDOFF.md (cloud sync section).
+// =============================================================================
+
+const VERSION = '1.0.0';
+const STORAGE_PREFIX = 'compliance_tracker_';
+const KEYS = {
+  companies: STORAGE_PREFIX + 'companies',
+  requirements: STORAGE_PREFIX + 'requirements',
+  tasks: STORAGE_PREFIX + 'tasks',
+  deletedReqs: STORAGE_PREFIX + 'deletedReqs',
+  migrations: STORAGE_PREFIX + 'migrations_done',
+};
+
+// =============================================================================
+// COMPLIANCE LIBRARY — jurisdiction-specific compliance requirements
+// To add new jurisdictions, extend LIBRARY and COUNTRIES arrays
+// =============================================================================
+const LIBRARY = {
+  AU: [
+    { name: 'ASIC annual review & fee', category: 'Corporate', regulator: 'ASIC', frequency: 'Annual', timing: 'Anniversary of registration', notes: 'Standard Pty Ltd fee $329 for 2025/26' },
+    { name: 'Solvency resolution', category: 'Corporate', regulator: 'ASIC', frequency: 'Annual', timing: 'Within 2 months of review date', notes: 'Directors confirm company can pay debts' },
+    { name: 'Company income tax return', category: 'Tax', regulator: 'ATO', frequency: 'Annual', timing: '28 February (varies by category)', notes: 'Corporate rate 25% or 30%' },
+    { name: 'Business Activity Statement (BAS)', category: 'Tax', regulator: 'ATO', frequency: 'Quarterly', timing: '28 days after quarter end', notes: 'Includes GST PAYG withholding & instalments' },
+    { name: 'PAYG instalments', category: 'Tax', regulator: 'ATO', frequency: 'Quarterly', timing: '28 days after quarter end', notes: 'Pre-payment toward tax liability' },
+    { name: 'Fringe Benefits Tax (FBT) return', category: 'Tax', regulator: 'ATO', frequency: 'Annual', timing: '21 May (25 June via tax agent)', notes: 'FBT year 1 April – 31 March' },
+    { name: 'Single Touch Payroll (STP)', category: 'Tax', regulator: 'ATO', frequency: 'Per pay run', timing: 'Real-time', notes: 'Reports wages PAYG and super' },
+    { name: 'Superannuation Guarantee', category: 'Payroll', regulator: 'ATO', frequency: 'Quarterly (payday from 1 Jul 2026)', timing: '28 days after quarter end', notes: '12% of ordinary time earnings' },
+    { name: 'Payroll tax', category: 'State Tax', regulator: 'State Revenue Office', frequency: 'Monthly', timing: '7th of following month', notes: 'Thresholds vary by state' },
+    { name: 'Workers compensation premium', category: 'State Tax', regulator: 'State authority', frequency: 'Annual', timing: 'Per state policy date', notes: 'Premium based on wages and risk rating' },
+    { name: 'Lodge audited financial reports', category: 'Financial Reporting', regulator: 'ASIC', frequency: 'Annual', timing: 'Within 4 months of FY end', notes: 'Large proprietary or foreign-controlled' },
+    { name: 'Climate-related financial disclosures', category: 'Financial Reporting', regulator: 'ASIC', frequency: 'Annual', timing: 'With financial report', notes: 'Mandatory sustainability reporting — phased by size; Group 1 already in scope' },
+    { name: 'AML/CTF program & reporting', category: 'Financial Services', regulator: 'AUSTRAC', frequency: 'Ongoing', timing: 'TTRs within 10 days', notes: 'Tranche 2 expanding from 2026' },
+    { name: 'PAYG withholding', category: 'Tax', regulator: 'ATO', frequency: 'Per pay cycle', timing: 'Reported via BAS/STP', notes: 'Withhold tax from payments to employees and contractors without ABN' },
+    { name: 'Beneficial ownership register', category: 'Corporate', regulator: 'Internal (Treasury reforms in progress)', frequency: 'Ongoing', timing: 'On changes', notes: 'Maintain internally; public register reforms progressing' },
+  ],
+  NZ: [
+    { name: 'Annual return filing', category: 'Corporate', regulator: 'Companies Office', frequency: 'Annual', timing: 'Month allocated on registration', notes: 'Confirms directors shareholders address' },
+    { name: 'IR4 company income tax return', category: 'Tax', regulator: 'IRD', frequency: 'Annual', timing: '7 July (or 31 March with tax agent)', notes: 'Corporate tax rate 28%' },
+    { name: 'Provisional tax', category: 'Tax', regulator: 'IRD', frequency: 'Three instalments', timing: '28 Aug / 15 Jan / 7 May', notes: 'Standard balance date 31 March' },
+    { name: 'GST returns', category: 'Tax', regulator: 'IRD', frequency: '2-monthly', timing: '28th of month following period', notes: 'Standard rate 15%' },
+    { name: 'PAYE / payday filing', category: 'Payroll Tax', regulator: 'IRD', frequency: 'Each pay run', timing: 'Within 2 working days of payday', notes: 'Real-time filing' },
+    { name: 'KiwiSaver employer contributions', category: 'Payroll Tax', regulator: 'IRD', frequency: 'Each pay run', timing: 'With PAYE', notes: 'Minimum 3% employer contribution' },
+    { name: 'ACC employer levies', category: 'Payroll Tax', regulator: 'ACC', frequency: 'Annual invoice', timing: 'Invoiced annually', notes: 'Work levy plus Earner levy' },
+    { name: 'FBT return', category: 'Tax', regulator: 'IRD', frequency: 'Quarterly', timing: '20th after quarter end', notes: 'Up to 63.93% on attributed benefits' },
+    { name: 'Audited GAAP financial statements', category: 'Financial Reporting', regulator: 'Companies Office', frequency: 'Annual', timing: 'Within 5 months of balance date', notes: 'Large companies: assets > $66M or revenue > $33M' },
+    { name: 'Special Purpose Financial Reports (SPFR)', category: 'Financial Reporting', regulator: 'IRD', frequency: 'Annual', timing: 'With IR4', notes: 'Active companies above $30k income/expenditure thresholds' },
+    { name: 'AML/CFT compliance programme', category: 'Financial Services', regulator: 'DIA / FMA / RBNZ', frequency: 'Annual', timing: '31 August reporting', notes: 'Includes risk assessment and audit' },
+    { name: 'Notify director/shareholder changes', category: 'Corporate', regulator: 'Companies Office', frequency: 'As needed', timing: 'Within 20 working days', notes: 'Appointments resignations residential address changes' },
+    { name: 'GST registration', category: 'Tax', regulator: 'IRD', frequency: 'One-off', timing: 'On reaching threshold', notes: 'Turnover ≥ NZD 60,000 in any 12-month period' },
+    { name: 'Resident Withholding Tax (RWT)', category: 'Tax', regulator: 'IRD', frequency: 'With monthly/quarterly returns', timing: 'Per IRD schedule', notes: '28% default for company recipients' },
+    { name: 'Non-resident Withholding Tax (NRWT)', category: 'Tax', regulator: 'IRD', frequency: 'Per payment cycle', timing: 'Per IRD schedule', notes: '15% interest/royalties; 30% dividends (DTA reductions may apply)' },
+    { name: 'Transfer pricing documentation', category: 'Tax', regulator: 'IRD', frequency: 'Annual (contemporaneous)', timing: 'Available on request; supports IR4', notes: 'Burden of proof on taxpayer; OECD-aligned local + master file accepted' },
+  ],
+  US: [
+    { name: 'Federal income tax return (Form 1120)', category: 'Tax', regulator: 'IRS', frequency: 'Annual', timing: '15 April', notes: 'Federal corporate rate 21%' },
+    { name: 'Quarterly federal estimated taxes', category: 'Tax', regulator: 'IRS', frequency: 'Quarterly', timing: '15 Apr / Jun / Sep / Dec', notes: 'Required if owe ≥ $500' },
+    { name: 'Form 941 (payroll tax return)', category: 'Payroll Tax', regulator: 'IRS', frequency: 'Quarterly', timing: 'Last day of month after quarter', notes: 'FIT FICA Medicare withheld' },
+    { name: 'Form 940 (FUTA)', category: 'Payroll Tax', regulator: 'IRS', frequency: 'Annual', timing: '31 January', notes: '6% on first $7000 wages' },
+    { name: 'W-2 / W-3 forms', category: 'Payroll Tax', regulator: 'IRS / SSA', frequency: 'Annual', timing: '31 January', notes: 'Employee and SSA copies' },
+    { name: '1099-NEC (contractor payments)', category: 'Tax Reporting', regulator: 'IRS', frequency: 'Annual', timing: '31 January', notes: 'Payments ≥ $600 to non-employees' },
+    { name: 'Form 5472 (foreign-owned reporting)', category: 'Tax', regulator: 'IRS', frequency: 'Annual', timing: 'With Form 1120', notes: '$25k penalty for non-filing — even with no income' },
+    { name: 'Delaware franchise tax + annual report', category: 'State Tax', regulator: 'DE Division of Corporations', frequency: 'Annual', timing: '1 March', notes: 'Two methods — APVC usually lower' },
+    { name: 'State annual report', category: 'Corporate', regulator: 'Secretary of State', frequency: 'Annual', timing: 'Varies by state', notes: 'Failure can suspend entity' },
+    { name: 'Sales & use tax returns', category: 'State Tax', regulator: 'State revenue dept', frequency: 'Quarterly', timing: 'Varies by state', notes: 'Post-Wayfair economic nexus' },
+    { name: 'State unemployment insurance (SUI)', category: 'Payroll Tax', regulator: 'State workforce agency', frequency: 'Quarterly', timing: 'Last day of month after quarter', notes: 'Rate varies by experience rating' },
+    { name: 'Workers compensation insurance', category: 'State Tax', regulator: 'State', frequency: 'Annual policy', timing: 'Per state', notes: 'Mandatory in nearly all states' },
+  ],
+};
+
+const COUNTRY_TO_KEY = { 'Australia': 'AU', 'New Zealand': 'NZ', 'United States': 'US' };
+const COUNTRIES = ['Australia', 'New Zealand', 'United States'];
+
+const SEED_COMPANIES = [
+  { name: 'DISPUTE BUDDY AUSTRALIA PTY LTD', domicile: 'Australia', industry: 'SaaS', taxYearEnd: '06-30' },
+  { name: 'DISPUTE BUDDY LIMITED', domicile: 'New Zealand', industry: 'SaaS', taxYearEnd: '03-31' },
+  { name: 'Clutch Glue Pty', domicile: 'Australia', industry: 'Consumer Products', taxYearEnd: '06-30' },
+  { name: 'Clutch Glue LLC', domicile: 'United States', industry: 'Consumer Products', taxYearEnd: '12-31' },
+];
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+function uid() { return Math.random().toString(36).slice(2, 11); }
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+function addDays(iso, days) { const d = new Date(iso); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); }
+function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function escHTML(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function statusFor(t) {
+  if (t.completed) return 'done';
+  const d = daysBetween(todayISO(), t.dueDate);
+  if (d < 0) return 'overdue';
+  if (d <= 7) return 'urgent';
+  if (d <= 14) return 'upcoming';
+  return 'future';
+}
+
+function suggestDueDate(taxYearEnd, frequency) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const [m, d] = (taxYearEnd || '12-31').split('-').map(Number);
+  const fyEndThis = new Date(year, m - 1, d);
+  const fyEnd = fyEndThis < today ? new Date(year + 1, m - 1, d) : fyEndThis;
+  if (/annual/i.test(frequency)) { const due = new Date(fyEnd); due.setMonth(due.getMonth() + 4); return due.toISOString().slice(0, 10); }
+  if (/6-?monthly|six.?month|half.?year|semi.?annual/i.test(frequency)) return addDays(todayISO(), 180);
+  if (/quarter|three/i.test(frequency)) return addDays(todayISO(), 60);
+  if (/2-?monthly|two.?month|bi.?month/i.test(frequency)) return addDays(todayISO(), 60);
+  if (/month/i.test(frequency)) return addDays(todayISO(), 28);
+  if (/pay run|real-time/i.test(frequency)) return addDays(todayISO(), 14);
+  return addDays(todayISO(), 90);
+}
+
+// =============================================================================
+// STATE
+// =============================================================================
+const state = {
+  companies: [],
+  requirements: [],
+  tasks: [],
+  deletedReqs: {},
+  selectedId: null,
+  view: 'portfolio',
+  modal: null,
+  taskFilter: 'open',
+  calCursor: { y: new Date().getFullYear(), m: new Date().getMonth() },
+};
+
+const COMPANY_PALETTE = ['#2563eb', '#dc2626', '#16a34a', '#ea580c', '#7c3aed', '#db2777', '#0891b2', '#65a30d'];
+function getCompanyColor(companyId) {
+  const idx = state.companies.findIndex(c => c.id === companyId);
+  return COMPANY_PALETTE[idx % COMPANY_PALETTE.length];
+}
+function getCompanyShort(co) {
+  if (!co) return '?';
+  return co.name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 3);
+}
+
+// =============================================================================
+// PERSISTENCE — using browser localStorage
+// =============================================================================
+function persist(key) {
+  try { localStorage.setItem(KEYS[key], JSON.stringify(state[key])); }
+  catch (e) { console.error('Save', key, e); alert('Storage error: ' + e.message + '. Your browser storage may be full or disabled.'); }
+}
+function persistAll() { persist('companies'); persist('requirements'); persist('tasks'); persist('deletedReqs'); }
+
+function loadState() {
+  for (const k of ['companies', 'requirements', 'tasks']) {
+    try { const v = localStorage.getItem(KEYS[k]); if (v) state[k] = JSON.parse(v); } catch (e) {}
+  }
+  try { const v = localStorage.getItem(KEYS.deletedReqs); if (v) state.deletedReqs = JSON.parse(v); } catch (e) {}
+  if (state.companies.length === 0) seed();
+  runMigrations();
+  state.selectedId = state.companies[0] && state.companies[0].id;
+}
+
+function runMigrations() {
+  let done = [];
+  try { const v = localStorage.getItem(KEYS.migrations); if (v) done = JSON.parse(v); } catch (e) {}
+
+  // Migration: seed Founded To Be Counted with 6-monthly GST due 28 Jul 2026
+  if (!done.includes('add_ftbc_v1')) {
+    const exists = state.companies.some(c => /founded.{0,3}to.{0,3}be.{0,3}counted/i.test(c.name) || /\bftbc\b/i.test(c.name));
+    if (!exists) {
+      const co = { id: uid(), name: 'Founded To Be Counted', domicile: 'New Zealand', industry: 'Financial confidence platform', taxYearEnd: '03-31', active: true };
+      state.companies.push(co);
+      const lib = LIBRARY.NZ;
+      for (const item of lib) {
+        const reqId = uid();
+        let reqOverride = { ...item };
+        let dueDate = suggestDueDate(co.taxYearEnd, item.frequency);
+        let taskNotes = '';
+        if (item.name === 'GST returns') {
+          reqOverride.frequency = '6-monthly';
+          reqOverride.timing = '28th of month after period end (e.g. 28 Jul for Jan–Jun)';
+          dueDate = '2026-07-28';
+          taskNotes = 'Period: 1 Jan – 30 Jun 2026';
+        }
+        state.requirements.push({ id: reqId, companyId: co.id, ...reqOverride });
+        state.tasks.push({ id: uid(), companyId: co.id, requirementId: reqId, name: item.name, dueDate, priority: 'Medium', completed: false, notes: taskNotes });
+      }
+      persistAll();
+    }
+    done.push('add_ftbc_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+}
+
+function seed() {
+  state.companies = SEED_COMPANIES.map(c => ({ ...c, id: uid(), active: true }));
+  state.requirements = [];
+  state.tasks = [];
+  for (const co of state.companies) {
+    const lib = LIBRARY[COUNTRY_TO_KEY[co.domicile]] || [];
+    for (const item of lib) {
+      const reqId = uid();
+      state.requirements.push({ id: reqId, companyId: co.id, ...item });
+      state.tasks.push({ id: uid(), companyId: co.id, requirementId: reqId, name: item.name, dueDate: suggestDueDate(co.taxYearEnd, item.frequency), priority: 'Medium', completed: false, notes: '' });
+    }
+  }
+  persistAll();
+}
+
+function factoryReset() {
+  if (!confirm('FACTORY RESET will delete ALL companies, requirements, tasks, and deletion history. Proceed?')) return;
+  if (!confirm('Are you absolutely sure? Last chance to cancel.')) return;
+  for (const k of Object.values(KEYS)) {
+    try { localStorage.removeItem(k); } catch (e) {}
+  }
+  state.companies = []; state.requirements = []; state.tasks = []; state.deletedReqs = {};
+  seed();
+  state.selectedId = state.companies[0] && state.companies[0].id;
+  state.view = 'portfolio';
+  render();
+}
+
+// =============================================================================
+// ACTIONS
+// =============================================================================
+function selectCompany(id) { state.selectedId = id; render(); }
+function setView(v) { state.view = v; render(); }
+function setFilter(f) { state.taskFilter = f; render(); }
+
+function completeTask(id) {
+  const t = state.tasks.find(x => x.id === id); if (!t) return;
+  t.completed = true;
+  const req = state.requirements.find(r => r.id === t.requirementId);
+  if (req && /quarter|month|annual|pay run|three/i.test(req.frequency || '')) {
+    const co = state.companies.find(c => c.id === t.companyId);
+    state.tasks.push({ id: uid(), companyId: t.companyId, requirementId: t.requirementId, name: t.name, dueDate: suggestDueDate(co && co.taxYearEnd, req.frequency), priority: t.priority, completed: false, notes: '' });
+  }
+  persist('tasks'); render();
+}
+
+function uncompleteTask(id) {
+  const t = state.tasks.find(x => x.id === id); if (!t) return;
+  t.completed = false; persist('tasks'); render();
+}
+
+function addCompany(data) {
+  const co = { ...data, id: uid(), active: true };
+  state.companies.push(co);
+  const lib = LIBRARY[COUNTRY_TO_KEY[data.domicile]] || [];
+  for (const item of lib) {
+    const reqId = uid();
+    state.requirements.push({ id: reqId, companyId: co.id, ...item });
+    state.tasks.push({ id: uid(), companyId: co.id, requirementId: reqId, name: item.name, dueDate: suggestDueDate(data.taxYearEnd, item.frequency), priority: 'Medium', completed: false, notes: '' });
+  }
+  state.selectedId = co.id;
+  persistAll(); closeModal(); render();
+}
+
+function deleteCompany(id) {
+  if (!confirm('Delete this company and all its tasks?')) return;
+  state.companies = state.companies.filter(c => c.id !== id);
+  state.requirements = state.requirements.filter(r => r.companyId !== id);
+  state.tasks = state.tasks.filter(t => t.companyId !== id);
+  if (state.deletedReqs && state.deletedReqs[id]) { delete state.deletedReqs[id]; persist('deletedReqs'); }
+  if (state.selectedId === id) state.selectedId = state.companies[0] && state.companies[0].id;
+  persistAll(); render();
+}
+
+function deleteRequirement(id) {
+  if (!confirm('Delete this requirement and its tasks?')) return;
+  const req = state.requirements.find(r => r.id === id);
+  if (req) {
+    state.deletedReqs[req.companyId] = state.deletedReqs[req.companyId] || [];
+    if (!state.deletedReqs[req.companyId].includes(req.name)) {
+      state.deletedReqs[req.companyId].push(req.name);
+    }
+  }
+  state.requirements = state.requirements.filter(r => r.id !== id);
+  state.tasks = state.tasks.filter(t => t.requirementId !== id);
+  persist('requirements'); persist('tasks'); persist('deletedReqs'); render();
+}
+
+function navigateCal(delta) {
+  let m = state.calCursor.m + delta, y = state.calCursor.y;
+  if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
+  state.calCursor = { y, m }; render();
+}
+function calToday() { const d = new Date(); state.calCursor = { y: d.getFullYear(), m: d.getMonth() }; render(); }
+
+function openModal(name) { state.modal = name; render(); }
+function closeModal() { state.modal = null; render(); }
+
+function syncLibraryForCurrent() {
+  const co = state.companies.find(c => c.id === state.selectedId);
+  if (!co) return;
+  const lib = LIBRARY[COUNTRY_TO_KEY[co.domicile]] || [];
+  const existingNames = new Set(state.requirements.filter(r => r.companyId === co.id).map(r => r.name));
+  const deletedForCo = new Set((state.deletedReqs && state.deletedReqs[co.id]) || []);
+  let added = 0;
+  for (const item of lib) {
+    if (existingNames.has(item.name) || deletedForCo.has(item.name)) continue;
+    const reqId = uid();
+    state.requirements.push({ id: reqId, companyId: co.id, ...item });
+    state.tasks.push({ id: uid(), companyId: co.id, requirementId: reqId, name: item.name, dueDate: suggestDueDate(co.taxYearEnd, item.frequency), priority: 'Medium', completed: false, notes: '' });
+    added++;
+  }
+  if (added > 0) { persist('requirements'); persist('tasks'); }
+  render();
+  if (added === 0) alert('No new library items to add.');
+}
+
+function restoreRequirement(name) {
+  const co = state.companies.find(c => c.id === state.selectedId);
+  if (!co || !state.deletedReqs[co.id]) return;
+  state.deletedReqs[co.id] = state.deletedReqs[co.id].filter(n => n !== name);
+  if (state.deletedReqs[co.id].length === 0) delete state.deletedReqs[co.id];
+  const lib = LIBRARY[COUNTRY_TO_KEY[co.domicile]] || [];
+  const item = lib.find(x => x.name === name);
+  if (item) {
+    const reqId = uid();
+    state.requirements.push({ id: reqId, companyId: co.id, ...item });
+    state.tasks.push({ id: uid(), companyId: co.id, requirementId: reqId, name: item.name, dueDate: suggestDueDate(co.taxYearEnd, item.frequency), priority: 'Medium', completed: false, notes: '' });
+  }
+  persist('deletedReqs'); persist('requirements'); persist('tasks'); render();
+}
+
+// =============================================================================
+// EXPORTS — ICS calendar, CSV, JSON backup
+// =============================================================================
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime || 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+}
+
+function escapeICS(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+
+function generateICS(tasks, requirements, companyName) {
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Compliance Tracker//EN', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:' + escapeICS(companyName + ' compliance')];
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  tasks.forEach(t => {
+    if (t.completed) return;
+    const req = requirements.find(r => r.id === t.requirementId);
+    const dt = t.dueDate.replace(/-/g, '');
+    lines.push('BEGIN:VEVENT', 'UID:' + t.id + '@compliance-tracker', 'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + dt, 'DTEND;VALUE=DATE:' + dt,
+      'SUMMARY:' + escapeICS(t.name),
+      'DESCRIPTION:' + escapeICS(companyName + ' | ' + (req ? req.regulator + ' | ' + req.frequency + ' | ' + req.timing : '') + (req && req.notes ? '\n\n' + req.notes : '')),
+      'BEGIN:VALARM', 'TRIGGER:-P14D', 'ACTION:DISPLAY', 'DESCRIPTION:' + escapeICS(t.name + ' due in 14 days'), 'END:VALARM',
+      'BEGIN:VALARM', 'TRIGGER:-P7D', 'ACTION:DISPLAY', 'DESCRIPTION:' + escapeICS(t.name + ' due in 7 days'), 'END:VALARM',
+      'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:' + escapeICS(t.name + ' due tomorrow'), 'END:VALARM',
+      'END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+function tasksToCSV(tasks, requirements, companies) {
+  const rows = [['Company', 'Requirement', 'Category', 'Regulator', 'Frequency', 'Due Date', 'Status', 'Priority', 'Notes']];
+  tasks.forEach(t => {
+    const co = companies.find(c => c.id === t.companyId);
+    const req = requirements.find(r => r.id === t.requirementId);
+    rows.push([co ? co.name : '', t.name, req ? req.category : '', req ? req.regulator : '', req ? req.frequency : '', t.dueDate, t.completed ? 'Done' : statusFor(t), t.priority || '', (t.notes || '').replace(/\n/g, ' ')]);
+  });
+  return rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+}
+
+function exportICS(scope) {
+  const co = state.companies.find(c => c.id === state.selectedId);
+  if (scope === 'company' && co) {
+    const tasks = state.tasks.filter(t => t.companyId === co.id);
+    const reqs = state.requirements.filter(r => r.companyId === co.id);
+    downloadFile(generateICS(tasks, reqs, co.name), slug(co.name) + '-compliance.ics', 'text/calendar');
+  } else {
+    downloadFile(generateICS(state.tasks, state.requirements, 'All clients'), 'all-clients-compliance.ics', 'text/calendar');
+  }
+}
+
+function exportCSV(scope) {
+  const co = state.companies.find(c => c.id === state.selectedId);
+  if (scope === 'company' && co) {
+    const tasks = state.tasks.filter(t => t.companyId === co.id);
+    const reqs = state.requirements.filter(r => r.companyId === co.id);
+    downloadFile(tasksToCSV(tasks, reqs, state.companies), slug(co.name) + '-tasks.csv', 'text/csv');
+  } else {
+    downloadFile(tasksToCSV(state.tasks, state.requirements, state.companies), 'all-clients-tasks.csv', 'text/csv');
+  }
+}
+
+function exportBackup() {
+  const j = JSON.stringify({ exportedAt: new Date().toISOString(), version: VERSION, companies: state.companies, requirements: state.requirements, tasks: state.tasks, deletedReqs: state.deletedReqs }, null, 2);
+  downloadFile(j, 'compliance-backup-' + todayISO() + '.json', 'application/json');
+}
+
+function importBackup() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.companies || !Array.isArray(data.companies)) throw new Error('Invalid backup file');
+        if (!confirm(`Import ${data.companies.length} companies and ${data.tasks.length} tasks? This REPLACES your current data.`)) return;
+        state.companies = data.companies;
+        state.requirements = data.requirements || [];
+        state.tasks = data.tasks || [];
+        state.deletedReqs = data.deletedReqs || {};
+        state.selectedId = state.companies[0] && state.companies[0].id;
+        persistAll(); render();
+        alert('Import successful.');
+      } catch (err) { alert('Import failed: ' + err.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+
+// =============================================================================
+// RENDER
+// =============================================================================
+function render() {
+  const root = document.getElementById('root');
+  const co = state.companies.find(c => c.id === state.selectedId);
+
+  root.innerHTML = `
+    <header style="margin-bottom: 16px;">
+      <div class="row" style="justify-content: space-between;">
+        <h1>Compliance tracker</h1>
+        <div class="row" style="gap: 8px;">
+          <button onclick="factoryReset()" style="border-color: #fecaca; color: #b91c1c;">⚠ Reset</button>
+          <button onclick="openModal('add-company')">+ Add company</button>
+        </div>
+      </div>
+      <p style="color: #64748b; font-size: 11px; margin: 4px 0 0;">v${VERSION} · Data stored in this browser. Use Share → Backup to save a portable copy.</p>
+    </header>
+
+    <div class="companies" style="${state.view === 'portfolio' ? 'display: none;' : ''}">
+      ${state.companies.map(c => `
+        <button class="chip ${c.id === state.selectedId ? 'active' : ''}" onclick="selectCompany('${c.id}')">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${getCompanyColor(c.id)}; margin-right: 6px; vertical-align: middle;"></span>
+          ${escHTML(c.name)}
+          <span class="country-tag">${c.domicile === 'Australia' ? 'AU' : c.domicile === 'New Zealand' ? 'NZ' : 'US'}</span>
+        </button>
+      `).join('')}
+    </div>
+
+    <nav class="nav">
+      <button class="tab ${state.view === 'portfolio' ? 'active' : ''}" onclick="setView('portfolio')">Portfolio</button>
+      <button class="tab ${state.view === 'dashboard' ? 'active' : ''}" onclick="setView('dashboard')">Dashboard</button>
+      <button class="tab ${state.view === 'tasks' ? 'active' : ''}" onclick="setView('tasks')">Tasks</button>
+      <button class="tab ${state.view === 'requirements' ? 'active' : ''}" onclick="setView('requirements')">Requirements</button>
+      <button class="tab ${state.view === 'calendar' ? 'active' : ''}" onclick="setView('calendar')">Calendar</button>
+      <button class="tab ${state.view === 'share' ? 'active' : ''}" onclick="setView('share')">Share</button>
+      <button class="tab ${state.view === 'companies' ? 'active' : ''}" onclick="setView('companies')">Companies</button>
+    </nav>
+
+    <main>
+      ${state.view === 'portfolio' ? renderPortfolio() : (co ? renderView(co) : '<div class="empty">Add a company to begin.</div>')}
+    </main>
+
+    ${state.modal ? renderModal() : ''}
+  `;
+}
+
+function renderView(co) {
+  const cTasks = state.tasks.filter(t => t.companyId === co.id);
+  const cReqs = state.requirements.filter(r => r.companyId === co.id);
+  switch (state.view) {
+    case 'dashboard': return renderDashboard(co, cTasks, cReqs);
+    case 'tasks': return renderTasks(cTasks, cReqs);
+    case 'requirements': return renderRequirements(cReqs, cTasks);
+    case 'calendar': return renderCalendar(cTasks);
+    case 'share': return renderShare(co, cTasks, cReqs);
+    case 'companies': return renderCompanies();
+    default: return '';
+  }
+}
+
+function renderPortfolio() {
+  const allTasks = state.tasks;
+  const open = allTasks.filter(t => !t.completed);
+  const overdue = open.filter(t => statusFor(t) === 'overdue');
+  const urgent = open.filter(t => statusFor(t) === 'urgent');
+  const upcoming = open.filter(t => statusFor(t) === 'upcoming');
+  const future = open.filter(t => statusFor(t) === 'future');
+  const done = allTasks.filter(t => t.completed);
+  const next4 = open.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 4);
+
+  const { y, m } = state.calCursor;
+  const monthName = new Date(y, m, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const firstWeekday = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const byDate = {};
+  allTasks.forEach(t => {
+    const d = new Date(t.dueDate);
+    if (d.getFullYear() === y && d.getMonth() === m) {
+      const day = d.getDate();
+      (byDate[day] = byDate[day] || []).push(t);
+    }
+  });
+
+  let cells = '';
+  for (let i = 0; i < firstWeekday; i++) cells += '<div class="cal-day" style="background: #f8fafc;"></div>';
+  const today = new Date();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
+    const dayT = (byDate[d] || []).sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      const order = { overdue: 0, urgent: 1, upcoming: 2, future: 3 };
+      return (order[statusFor(a)] || 9) - (order[statusFor(b)] || 9);
+    });
+    const events = dayT.slice(0, 3).map(t => {
+      const co = state.companies.find(c => c.id === t.companyId);
+      const color = getCompanyColor(t.companyId);
+      const short = getCompanyShort(co);
+      const status = statusFor(t);
+      const title = `${co ? co.name : ''}: ${t.name}`;
+      return `<div class="ev ${status}" title="${escHTML(title)}" style="border-left: 3px solid ${color}; padding-left: 4px;"><span style="font-weight: 600; opacity: 0.85;">${short}</span> ${escHTML(t.name)}</div>`;
+    }).join('');
+    const more = dayT.length > 3 ? `<div class="task-meta" style="margin-top: 2px;">+${dayT.length - 3} more</div>` : '';
+    cells += `<div class="cal-day ${isToday ? 'today' : ''}"><div class="num">${d}</div>${events}${more}</div>`;
+  }
+
+  return `
+    <div style="margin-bottom: 16px;">
+      <h2 style="margin-bottom: 4px;">Portfolio overview</h2>
+      <p style="font-size: 12px; color: #64748b; margin: 0;">All deadlines across ${state.companies.length} companies</p>
+    </div>
+    <div class="grid-stats">
+      <div class="stat red"><div class="v">${overdue.length}</div><div class="l">Overdue</div></div>
+      <div class="stat amber"><div class="v">${urgent.length}</div><div class="l">≤ 7 days</div></div>
+      <div class="stat yellow"><div class="v">${upcoming.length}</div><div class="l">≤ 14 days</div></div>
+      <div class="stat slate"><div class="v">${future.length}</div><div class="l">Later</div></div>
+      <div class="stat green"><div class="v">${done.length}</div><div class="l">Done</div></div>
+    </div>
+    <div class="row" style="margin-bottom: 8px; gap: 12px;">
+      ${state.companies.map(c => `
+        <span class="legend-item" style="cursor: pointer;" onclick="selectCompany('${c.id}'); setView('dashboard')">
+          <span class="dot" style="background: ${getCompanyColor(c.id)};"></span>
+          ${escHTML(c.name)}
+        </span>
+      `).join('')}
+    </div>
+    <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
+      <h2 style="margin: 0;">${monthName}</h2>
+      <div class="row">
+        <button onclick="navigateCal(-1)">←</button>
+        <button onclick="calToday()">today</button>
+        <button onclick="navigateCal(1)">→</button>
+      </div>
+    </div>
+    <div class="calendar">
+      ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-head">${d}</div>`).join('')}
+      ${cells}
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="dot overdue"></span>Overdue</span>
+      <span class="legend-item"><span class="dot urgent"></span>≤ 7 days</span>
+      <span class="legend-item"><span class="dot upcoming"></span>≤ 14 days</span>
+      <span class="legend-item"><span class="dot future"></span>Future</span>
+      <span class="legend-item"><span class="dot done"></span>Done</span>
+    </div>
+    ${overdue.length > 0 ? `
+      <h2 style="color: #b91c1c; margin-top: 24px;">⚠ Overdue across portfolio</h2>
+      <div class="card" style="padding: 0; margin-bottom: 16px; border-color: #fecaca;">${overdue.map(t => portfolioTaskRow(t)).join('')}</div>
+    ` : ''}
+    <h2 style="margin-top: 24px;">Next 4 deadlines across portfolio</h2>
+    ${next4.length === 0 ? '<div class="empty">No open deadlines.</div>' : `<div class="card" style="padding: 0;">${next4.map(t => portfolioTaskRow(t)).join('')}</div>`}
+  `;
+}
+
+function portfolioTaskRow(t) {
+  const status = statusFor(t);
+  const co = state.companies.find(c => c.id === t.companyId);
+  const req = state.requirements.find(r => r.id === t.requirementId);
+  const days = daysBetween(todayISO(), t.dueDate);
+  const countdown = t.completed ? '' : (days < 0 ? Math.abs(days) + 'd ago' : days === 0 ? 'today' : 'in ' + days + 'd');
+  const checkAction = t.completed ? `uncompleteTask('${t.id}')` : `completeTask('${t.id}')`;
+  const color = getCompanyColor(t.companyId);
+  return `
+    <div class="task-row" style="border-left: 3px solid ${color};">
+      <button class="checkbox ${t.completed ? 'done' : ''}" onclick="${checkAction}">${t.completed ? '✓' : ''}</button>
+      <div style="flex: 1; min-width: 0;">
+        <div class="task-name ${t.completed ? 'done' : ''}">${escHTML(t.name)}</div>
+        <div class="task-meta">
+          <span style="color: ${color}; font-weight: 500;">${escHTML(co ? co.name : '')}</span>
+          ${req ? ` · ${escHTML(req.regulator)} · ${escHTML(req.frequency)}` : ''}
+        </div>
+      </div>
+      <div class="task-due">
+        <div>${formatDate(t.dueDate)}</div>
+        ${countdown ? `<div class="countdown ${status}">${countdown}</div>` : ''}
+      </div>
+      <div class="dot ${status}"></div>
+    </div>
+  `;
+}
+
+function renderDashboard(co, tasks, reqs) {
+  const open = tasks.filter(t => !t.completed);
+  const overdue = open.filter(t => statusFor(t) === 'overdue');
+  const urgent = open.filter(t => statusFor(t) === 'urgent');
+  const upcoming = open.filter(t => statusFor(t) === 'upcoming');
+  const future = open.filter(t => statusFor(t) === 'future');
+  const done = tasks.filter(t => t.completed);
+  const next4 = open.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 4);
+
+  return `
+    <div class="card" style="margin-bottom: 12px;">
+      <h3>${escHTML(co.name)}</h3>
+      <p style="font-size: 12px; color: #64748b; margin: 4px 0 0;">${escHTML(co.domicile)} · ${escHTML(co.industry || '—')} · FYE ${escHTML(co.taxYearEnd || '—')} · ${reqs.length} requirements</p>
+    </div>
+    <div class="grid-stats">
+      <div class="stat red"><div class="v">${overdue.length}</div><div class="l">Overdue</div></div>
+      <div class="stat amber"><div class="v">${urgent.length}</div><div class="l">≤ 7 days</div></div>
+      <div class="stat yellow"><div class="v">${upcoming.length}</div><div class="l">≤ 14 days</div></div>
+      <div class="stat slate"><div class="v">${future.length}</div><div class="l">Later</div></div>
+      <div class="stat green"><div class="v">${done.length}</div><div class="l">Done</div></div>
+    </div>
+    ${overdue.length > 0 ? `
+      <h2 style="color: #b91c1c;">⚠ Overdue</h2>
+      <div class="card" style="padding: 0; margin-bottom: 16px; border-color: #fecaca;">${overdue.map(t => taskRowHTML(t, reqs, true)).join('')}</div>
+    ` : ''}
+    <h2>Next 4 deadlines</h2>
+    ${next4.length === 0 ? '<div class="empty">No open deadlines.</div>' : `<div class="card" style="padding: 0;">${next4.map(t => taskRowHTML(t, reqs, true)).join('')}</div>`}
+  `;
+}
+
+function renderTasks(tasks, reqs) {
+  const filtered = tasks.filter(t => state.taskFilter === 'open' ? !t.completed : state.taskFilter === 'done' ? t.completed : true)
+    .sort((a, b) => a.completed !== b.completed ? (a.completed ? 1 : -1) : a.dueDate.localeCompare(b.dueDate));
+  return `
+    <div class="row" style="margin-bottom: 12px;">
+      ${['open', 'done', 'all'].map(f => `<button class="chip ${state.taskFilter === f ? 'active' : ''}" onclick="setFilter('${f}')">${f}</button>`).join('')}
+    </div>
+    ${filtered.length === 0 ? '<div class="empty">No tasks here.</div>' : `<div class="card" style="padding: 0;">${filtered.map(t => taskRowHTML(t, reqs)).join('')}</div>`}
+  `;
+}
+
+function taskRowHTML(t, reqs, compact) {
+  const status = statusFor(t);
+  const req = reqs.find(r => r.id === t.requirementId);
+  const days = daysBetween(todayISO(), t.dueDate);
+  const countdown = t.completed ? '' : (days < 0 ? Math.abs(days) + 'd ago' : days === 0 ? 'today' : 'in ' + days + 'd');
+  const checkAction = t.completed ? `uncompleteTask('${t.id}')` : `completeTask('${t.id}')`;
+  return `
+    <div class="task-row">
+      <button class="checkbox ${t.completed ? 'done' : ''}" onclick="${checkAction}">${t.completed ? '✓' : ''}</button>
+      <div style="flex: 1; min-width: 0;">
+        <div class="task-name ${t.completed ? 'done' : ''}">${escHTML(t.name)}</div>
+        ${!compact && req ? `<div class="task-meta">${escHTML(req.regulator)} · ${escHTML(req.frequency)} · ${escHTML(req.category)}</div>` : ''}
+      </div>
+      <div class="task-due">
+        <div>${formatDate(t.dueDate)}</div>
+        ${countdown ? `<div class="countdown ${status}">${countdown}</div>` : ''}
+      </div>
+      <div class="dot ${status}"></div>
+    </div>
+  `;
+}
+
+function renderRequirements(reqs, tasks) {
+  const co = state.companies.find(c => c.id === state.selectedId);
+  const deletedNames = (co && state.deletedReqs && state.deletedReqs[co.id]) || [];
+  const lib = co ? (LIBRARY[COUNTRY_TO_KEY[co.domicile]] || []) : [];
+  const existingNames = new Set(reqs.map(r => r.name));
+  const deletedSet = new Set(deletedNames);
+  const availableInLib = lib.filter(item => !existingNames.has(item.name) && !deletedSet.has(item.name));
+  return `
+    <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
+      <p style="font-size: 13px; color: #64748b; margin: 0;">${reqs.length} compliance requirements</p>
+      ${availableInLib.length > 0 ? `<button onclick="syncLibraryForCurrent()">+ Pull ${availableInLib.length} new from library</button>` : ''}
+    </div>
+    ${reqs.length === 0 ? '<div class="empty">No requirements yet.</div>' : `<div class="card" style="padding: 0;">${reqs.map(r => {
+      const tCount = tasks.filter(t => t.requirementId === r.id).length;
+      const oCount = tasks.filter(t => t.requirementId === r.id && !t.completed).length;
+      return `
+        <div class="req-row">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500;">${escHTML(r.name)}</div>
+            <div class="task-meta" style="margin-top: 2px;">${escHTML(r.regulator)} · ${escHTML(r.frequency)} · ${escHTML(r.timing)}</div>
+            ${r.notes ? `<div class="task-meta" style="margin-top: 4px; font-style: italic;">${escHTML(r.notes)}</div>` : ''}
+          </div>
+          <span class="badge">${escHTML(r.category)}</span>
+          <span class="task-meta">${oCount}/${tCount}</span>
+          <button class="icon-btn" onclick="deleteRequirement('${r.id}')">🗑</button>
+        </div>
+      `;
+    }).join('')}</div>`}
+    ${deletedNames.length > 0 ? `
+      <div style="margin-top: 20px;">
+        <h2 style="margin-bottom: 8px;">Deleted (won't be re-added)</h2>
+        <div class="card" style="padding: 0;">
+          ${deletedNames.map(name => `
+            <div class="req-row">
+              <div style="flex: 1; font-size: 13px; color: #64748b;">${escHTML(name)}</div>
+              <button onclick="restoreRequirement('${escHTML(name).replace(/'/g, "\\'")}')">Restore</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderCalendar(tasks) {
+  const { y, m } = state.calCursor;
+  const monthName = new Date(y, m, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const firstWeekday = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const byDate = {};
+  tasks.forEach(t => {
+    const d = new Date(t.dueDate);
+    if (d.getFullYear() === y && d.getMonth() === m) {
+      const day = d.getDate();
+      (byDate[day] = byDate[day] || []).push(t);
+    }
+  });
+  let cells = '';
+  for (let i = 0; i < firstWeekday; i++) cells += '<div class="cal-day" style="background: #f8fafc;"></div>';
+  const today = new Date();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
+    const dayT = byDate[d] || [];
+    const events = dayT.slice(0, 3).map(t => `<div class="ev ${statusFor(t)}" title="${escHTML(t.name)}">${escHTML(t.name)}</div>`).join('');
+    const more = dayT.length > 3 ? `<div class="task-meta" style="margin-top: 2px;">+${dayT.length - 3} more</div>` : '';
+    cells += `<div class="cal-day ${isToday ? 'today' : ''}"><div class="num">${d}</div>${events}${more}</div>`;
+  }
+  return `
+    <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
+      <h2 style="margin: 0;">${monthName}</h2>
+      <div class="row">
+        <button onclick="navigateCal(-1)">←</button>
+        <button onclick="calToday()">today</button>
+        <button onclick="navigateCal(1)">→</button>
+      </div>
+    </div>
+    <div class="calendar">
+      ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-head">${d}</div>`).join('')}
+      ${cells}
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="dot overdue"></span>Overdue</span>
+      <span class="legend-item"><span class="dot urgent"></span>≤ 7 days</span>
+      <span class="legend-item"><span class="dot upcoming"></span>≤ 14 days</span>
+      <span class="legend-item"><span class="dot future"></span>Future</span>
+      <span class="legend-item"><span class="dot done"></span>Done</span>
+    </div>
+  `;
+}
+
+function renderShare(co, tasks, reqs) {
+  const shortName = co.name.split(' ').slice(0, 3).join(' ');
+  return `
+    <div class="card" style="margin-bottom: 16px;">
+      <h2 style="margin-bottom: 4px;">Calendar sync — phone & clients</h2>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">Downloads .ics. Import into Google/Apple/Outlook calendar — your phone syncs it and sends notifications 14d, 7d, 1d before each deadline. Email to clients to subscribe.</p>
+      <div class="row">
+        <button onclick="exportICS('company')">📅 Calendar for ${escHTML(shortName)}</button>
+        <button onclick="exportICS('all')">📅 All clients</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom: 16px;">
+      <h2 style="margin-bottom: 4px;">Client report — printable PDF</h2>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">Open the report, then "Print → Save as PDF" to email to client.</p>
+      <button onclick="openModal('report')">🖨 Open client report</button>
+    </div>
+    <div class="card" style="margin-bottom: 16px;">
+      <h2 style="margin-bottom: 4px;">Spreadsheet export</h2>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">For ad-hoc analysis or sharing with bookkeepers.</p>
+      <div class="row">
+        <button onclick="exportCSV('company')">⬇ CSV for ${escHTML(shortName)}</button>
+        <button onclick="exportCSV('all')">⬇ CSV for all clients</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom: 4px;">Backup & restore</h2>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">Backup downloads everything as JSON. Import lets you restore from a backup or move data between devices/browsers.</p>
+      <div class="row">
+        <button onclick="exportBackup()">⬇ Download backup</button>
+        <button onclick="importBackup()">⬆ Import backup</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCompanies() {
+  return `
+    <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
+      <p style="font-size: 13px; color: #64748b; margin: 0;">${state.companies.length} companies</p>
+      <button onclick="openModal('add-company')">+ Add company</button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+      ${state.companies.map(c => {
+        const ct = state.tasks.filter(t => t.companyId === c.id && !t.completed);
+        const ov = ct.filter(t => statusFor(t) === 'overdue').length;
+        const ur = ct.filter(t => statusFor(t) === 'urgent').length;
+        return `
+          <div class="card">
+            <div class="row" style="justify-content: space-between; align-items: flex-start;">
+              <div style="min-width: 0; flex: 1;">
+                <h3>${escHTML(c.name)}</h3>
+                <p class="task-meta" style="margin-top: 2px;">${escHTML(c.domicile)} · FYE ${escHTML(c.taxYearEnd || '—')}</p>
+              </div>
+              <button class="icon-btn" onclick="deleteCompany('${c.id}')">🗑</button>
+            </div>
+            <div class="row" style="margin-top: 10px; font-size: 12px;">
+              ${ov > 0 ? `<span style="color: #b91c1c;">${ov} overdue</span>` : ''}
+              ${ur > 0 ? `<span style="color: #b45309;">${ur} urgent</span>` : ''}
+              <span class="task-meta" style="margin-left: auto;">${ct.length} open</span>
+            </div>
+            <button onclick="selectCompany('${c.id}'); setView('dashboard')" style="margin-top: 10px;">Open →</button>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderModal() {
+  if (state.modal === 'add-company') return renderAddCompanyModal();
+  if (state.modal === 'report') return renderReportModal();
+  return '';
+}
+
+function renderAddCompanyModal() {
+  return `
+    <div class="modal-bg" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <div class="modal-head">
+          <h3>Add company</h3>
+          <button class="icon-btn" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <form onsubmit="event.preventDefault(); submitAddCompany()">
+            <div class="field"><label>Company name *</label><input id="f-name" required autofocus></div>
+            <div class="field"><label>Domicile</label>
+              <select id="f-dom" onchange="document.getElementById('f-fye').value = this.value === 'United States' ? '12-31' : this.value === 'New Zealand' ? '03-31' : '06-30'">
+                ${COUNTRIES.map(c => `<option>${c}</option>`).join('')}
+              </select>
+            </div>
+            <div class="row" style="gap: 8px;">
+              <div class="field" style="flex: 1;"><label>Industry</label><input id="f-ind"></div>
+              <div class="field" style="flex: 1;"><label>FYE (MM-DD)</label><input id="f-fye" value="06-30"></div>
+            </div>
+            <p class="task-meta" style="margin: 8px 0 12px; font-style: italic;">Adding will pre-populate jurisdiction-specific compliance requirements.</p>
+            <div class="row" style="justify-content: flex-end;">
+              <button type="button" onclick="closeModal()">Cancel</button>
+              <button type="submit" class="primary">Add</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function submitAddCompany() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) return;
+  addCompany({
+    name,
+    domicile: document.getElementById('f-dom').value,
+    industry: document.getElementById('f-ind').value,
+    taxYearEnd: document.getElementById('f-fye').value || '12-31',
+  });
+}
+
+function renderReportModal() {
+  const co = state.companies.find(c => c.id === state.selectedId);
+  if (!co) return '';
+  const tasks = state.tasks.filter(t => t.companyId === co.id);
+  const reqs = state.requirements.filter(r => r.companyId === co.id);
+  const open = tasks.filter(t => !t.completed).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const overdue = open.filter(t => statusFor(t) === 'overdue');
+  const next30 = open.filter(t => { const d = daysBetween(todayISO(), t.dueDate); return d >= 0 && d <= 30; });
+  const next90 = open.filter(t => { const d = daysBetween(todayISO(), t.dueDate); return d > 30 && d <= 90; });
+  const beyond = open.filter(t => daysBetween(todayISO(), t.dueDate) > 90);
+  const sect = (title, items, hi) => items.length === 0 ? '' : `
+    <div class="report-section ${hi ? 'highlight' : ''}">
+      <h3>${title}</h3>
+      <table>
+        <thead><tr><th>Requirement</th><th>Regulator</th><th>Frequency</th><th class="right">Due</th></tr></thead>
+        <tbody>${items.map(t => { const r = reqs.find(x => x.id === t.requirementId); return `<tr><td>${escHTML(t.name)}</td><td>${escHTML(r ? r.regulator : '—')}</td><td>${escHTML(r ? r.frequency : '—')}</td><td class="right">${formatDate(t.dueDate)}</td></tr>`; }).join('')}</tbody>
+      </table>
+    </div>
+  `;
+  return `
+    <div class="modal-bg" style="background: white; align-items: stretch;">
+      <div style="max-width: 760px; width: 100%; margin: 0 auto; background: white;">
+        <div class="modal-head no-print" style="position: sticky; top: 0; background: white; z-index: 10;">
+          <span style="font-size: 13px; color: #64748b;">Client report preview</span>
+          <div class="row">
+            <button class="primary" onclick="window.print()">🖨 Print / Save as PDF</button>
+            <button onclick="closeModal()">Close</button>
+          </div>
+        </div>
+        <div class="report">
+          <div style="border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 16px;">
+            <p style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Compliance status report</p>
+            <h1 style="margin: 4px 0 0;">${escHTML(co.name)}</h1>
+            <p style="font-size: 12px; color: #475569; margin: 4px 0 0;">${escHTML(co.domicile)} · FYE ${escHTML(co.taxYearEnd || '—')} · Generated ${formatDate(todayISO())}</p>
+          </div>
+          <div class="report-stats">
+            <div class="report-stat"><div class="v">${overdue.length}</div><div class="l">Overdue</div></div>
+            <div class="report-stat"><div class="v">${next30.length}</div><div class="l">Due in 30 days</div></div>
+            <div class="report-stat"><div class="v">${next90.length}</div><div class="l">Due in 90 days</div></div>
+            <div class="report-stat"><div class="v">${open.length}</div><div class="l">Total open</div></div>
+          </div>
+          ${sect('Overdue — immediate attention required', overdue, true)}
+          ${sect('Due within 30 days', next30)}
+          ${sect('Due within 31–90 days', next90)}
+          ${sect('Future obligations (90+ days)', beyond)}
+          <div style="margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
+            <p>This report reflects compliance obligations tracked as of ${formatDate(todayISO())}. Specific filing requirements may vary based on entity-level facts; consult your accountant or advisor for definitive guidance.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// =============================================================================
+// BOOT
+// =============================================================================
+loadState();
+render();
+</script>
+</body>
+</html>

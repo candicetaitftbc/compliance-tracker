@@ -1,0 +1,83 @@
+Jurisdiction,Requirement,Category,Regulator,Frequency,Timing,Applicability,Notes
+Australia,ASIC annual review & fee,Corporate,ASIC,Annual,Anniversary of registration,All companies,Standard Pty Ltd fee $329 for 2025/26; late fees escalate after 1 month
+Australia,Solvency resolution,Corporate,ASIC,Annual,Within 2 months of review date,All companies (unless financial reports recently lodged),Directors must resolve company can pay debts when due
+Australia,Lodge audited financial reports,Financial Reporting,ASIC,Annual,Within 4 months of FY end,"Large proprietary (2 of 3: revenue ≥$50M, assets ≥$25M, 100+ employees), public companies, foreign-controlled small proprietary",Prepared under AASB/IFRS with directors' report and auditor opinion
+Australia,Climate-related financial disclosures,Financial Reporting,ASIC,Annual,With financial report,Phased by size — Group 1 (largest) already in scope; Groups 2 & 3 phasing in,New mandatory sustainability reporting under Corporations Act
+Australia,Maintain financial records,Record Keeping,ATO/ASIC,Ongoing,Continuous,All companies,Minimum 7 years retention
+Australia,Company income tax return,Tax,ATO,Annual,Generally 28 Feb (varies by lodgement category),All companies,Corporate rate 25% (base rate entity) or 30%
+Australia,Business Activity Statement (BAS),Tax,ATO,Monthly or Quarterly,28 days after period end (21 days monthly),GST-registered entities (turnover ≥ $75K),Includes GST PAYG withholding PAYG instalments
+Australia,GST registration,Tax,ATO,One-off,On reaching threshold,Turnover ≥ $75K (or $150K for non-profits),Required before charging GST
+Australia,PAYG withholding,Tax,ATO,Per pay cycle,Reported via BAS/STP,Employers and businesses paying contractors without ABN,Withhold tax from payments and remit
+Australia,PAYG instalments,Tax,ATO,Quarterly,28 days after quarter end,Companies above instalment income threshold,Pre-payment toward annual tax liability
+Australia,Fringe Benefits Tax (FBT) return,Tax,ATO,Annual,21 May (25 June via registered tax agent),Employers providing non-cash benefits,FBT year runs 1 April – 31 March
+Australia,Single Touch Payroll (STP),Tax,ATO,Each pay run,Real-time,All employers,Reports wages PAYG and super to ATO
+Australia,TFN registration,Tax,ATO,One-off,At company formation,All companies,Obtained alongside ABN
+Australia,ABN registration,Tax,ABR,One-off,At company formation,All companies trading,Required for invoicing and GST
+Australia,Superannuation Guarantee,Payroll,ATO,Quarterly (moving to payday from 1 July 2026),28 days after quarter end currently,All employers,Rate is 12% of ordinary time earnings
+Australia,Payroll tax,State Tax,State Revenue Office,Monthly + annual reconciliation,7th of following month; annual recon July,Employers above state threshold,"Thresholds vary: NSW ~$1.2M, VIC ~$900K, QLD ~$1.3M"
+Australia,Workers' compensation premium,State Tax,State authority (icare/WorkSafe etc.),Annual,Per state policy date,All employers,Premium based on wages and industry risk rating
+Australia,Land tax,State Tax,State Revenue Office,Annual,Per state assessment,Companies holding taxable land,Thresholds and rates vary by state
+Australia,AFS licence compliance & financial reporting,Financial Services,ASIC,Annual + ongoing,Per licence conditions,Holders of Australian Financial Services Licence,Includes audited FS70/FS71 lodgement breach reporting
+Australia,Australian Credit Licence compliance,Financial Services,ASIC,Annual + ongoing,Per licence conditions,Consumer credit providers,Annual compliance certificate required
+Australia,AML/CTF program & reporting,Financial Services,AUSTRAC,Ongoing,Threshold transactions reported within 10 days,"Reporting entities — financial services, gambling, bullion, crypto; Tranche 2 adds lawyers accountants real estate from 2026",Includes TTRs SMRs IFTI and annual compliance report
+Australia,Modern Slavery statement,Governance,Attorney-General's Dept,Annual,Within 6 months of FY end,Entities with consolidated revenue ≥ $100M,Lodged on the Modern Slavery Register
+Australia,ASIC change notifications (financial),Corporate,ASIC,As needed,14–28 days depending on change type,All companies,Share structure shareholder changes director changes — typically 28 days
+Australia,Annual General Meeting (public companies),Corporate,ASIC,Annual,Within 5 months of FY end,Public companies only,Pty Ltd companies generally exempt
+Australia,Beneficial ownership register,Corporate,Internal (Treasury reforms progressing),Ongoing,On changes,All companies,Maintain internally; public register reforms in progress
+New Zealand,Annual return filing,Corporate,Companies Office,Annual,Month allocated on registration,All NZ-registered companies,Confirms directors shareholders registered office; filed online via Companies Office
+New Zealand,Resident director,Corporate,Companies Office,Ongoing,Continuous,All NZ companies,At least one director must live in NZ or live in Australia and be a director of an Australian company
+New Zealand,Notify director/shareholder changes,Corporate,Companies Office,As needed,Within 20 working days,All companies,Includes appointments resignations residential address changes
+New Zealand,Maintain financial records,Record Keeping,IRD/Companies Office,Ongoing,Continuous,All companies,7 years retention; English or translated
+New Zealand,IR4 company income tax return,Tax,IRD,Annual,7 July (or 31 March / 7 April with tax agent extension),All companies,Corporate tax rate 28%
+New Zealand,Provisional tax,Tax,IRD,Three instalments (standard),28 August / 15 January / 7 May for 31 March balance date,Companies with RIT > $5000,Standard uplift method or estimation
+New Zealand,GST registration,Tax,IRD,One-off,On reaching threshold,Turnover ≥ NZD 60000 in any 12-month period,Voluntary registration available below threshold
+New Zealand,GST returns,Tax,IRD,Monthly / 2-monthly / 6-monthly,28th of month following period (May/Jan exceptions),GST-registered entities,Frequency depends on turnover; standard rate 15%
+New Zealand,PAYE / payday filing,Payroll Tax,IRD,Each pay run,Within 2 working days of payday (electronic filers),All employers,Replaces previous Employer Monthly Schedule
+New Zealand,KiwiSaver employer contributions,Payroll Tax,IRD,Each pay run,With PAYE,Employers,Minimum 3% employer contribution on top of employee contribution
+New Zealand,ACC employer levies,Payroll Tax,ACC,Annual invoice + monthly via PAYE (CoverPlus),Invoiced annually based on payroll,All employers,Work levy + Earner levy collected via PAYE
+New Zealand,Fringe Benefit Tax (FBT) return,Tax,IRD,Quarterly or annual,Quarterly: 20th of month after quarter end; Annual: 31 May,Employers providing non-cash benefits,Rate up to 63.93% on attributed benefits
+New Zealand,Resident Withholding Tax (RWT),Tax,IRD,With monthly/quarterly returns,Per IRD schedule,Payers of interest/dividends to NZ residents,28% default for company recipients
+New Zealand,Non-resident Withholding Tax (NRWT),Tax,IRD,Per payment cycle,Per IRD schedule,Payers to non-residents,15% interest/royalties; 30% dividends (DTA reductions may apply)
+New Zealand,Imputation return (IR4J),Tax,IRD,Annual,With IR4,Companies operating imputation credit account,Tracks ICA balance and credits attached to dividends
+New Zealand,Special Purpose Financial Reports (SPFR),Financial Reporting,IRD,Annual,With IR4,Active companies above $30k income/expenditure thresholds,Minimum content set by IRD; not full GAAP
+New Zealand,Audited GAAP financial statements,Financial Reporting,Companies Office,Annual,Within 5 months of balance date,NZ companies that are 'large' (assets > NZD 66M OR revenue > NZD 33M for 2 preceding periods),Filed with Companies Office; can opt out with 95% shareholder resolution
+New Zealand,Audited GAAP financial statements (overseas-owned),Financial Reporting,Companies Office,Annual,Within 5 months of balance date,NZ subsidiaries of overseas companies or 25%+ overseas-held with assets > NZD 22M OR revenue > NZD 11M for 2 preceding periods,Lower threshold than purely domestic large companies
+New Zealand,FMC reporting entity financial statements,Financial Reporting,FMA / Companies Office,Annual,Within 4 months of balance date,"FMC reporting entities (issuers, licensed managers, banks, insurers, building societies, credit unions)",Audited NZ IFRS required
+New Zealand,Climate-related disclosures,Financial Reporting,XRB / FMA,Annual,With financial statements,"Climate Reporting Entities (large FMC entities, banks > $1B assets, insurers > $1B assets, listed equity/debt issuers)",NZ CS 1/2/3 standards apply
+New Zealand,AML/CFT compliance programme & annual report,Financial Services,DIA / FMA / RBNZ (sector-specific supervisor),Annual,31 August reporting deadline,"Reporting entities — financial institutions, lawyers, accountants, real estate agents, high-value dealers",Includes risk assessment programme audit suspicious activity reporting
+New Zealand,Financial Service Provider (FSP) registration,Financial Services,Companies Office (FSPR),Annual confirmation,Anniversary of registration,Anyone providing financial services in/from NZ,Most FSPs must also belong to a dispute resolution scheme
+New Zealand,Financial Markets Conduct (FMC) licence,Financial Services,FMA,Ongoing,Per licence conditions,"Managed investment scheme managers, derivatives issuers, DIMS providers, crowdfunding/P2P, financial advice providers",Includes licence reporting and conduct obligations
+New Zealand,Transfer pricing documentation,Tax,IRD,Annual (contemporaneous),Available on request; supports IR4,Entities with cross-border related-party transactions,Burden of proof on taxpayer; OECD-aligned local + master file accepted
+New Zealand,Country-by-Country (CbC) reporting,Tax,IRD,Annual,12 months after FY end,NZ-headquartered groups with consolidated revenue > NZD 1.3B,OECD BEPS Action 13 requirement
+New Zealand,Beneficial ownership records,Corporate,Companies Office (reforms in progress),Ongoing,Continuous,All companies,Maintain internally; public register reforms underway
+United States,Federal income tax return (Form 1120),Tax,IRS,Annual,15th day of 4th month after FY end (15 April for calendar year),All C-corporations,Federal corporate rate 21%; Form 7004 extends 6 months but not payment
+United States,Quarterly federal estimated taxes,Tax,IRS,Quarterly,15 April / 15 June / 15 September / 15 December,C-corps expecting to owe ≥ $500,Form 1120-W; underpayment triggers interest
+United States,Form 941 (payroll tax return),Payroll Tax,IRS,Quarterly,Last day of month following quarter end,All employers,Reports federal income tax withheld FICA and Medicare
+United States,Form 940 (FUTA),Payroll Tax,IRS,Annual,31 January,All employers,Federal unemployment tax — 6% on first $7000 of wages with state credit
+United States,Federal tax deposits (payroll),Payroll Tax,IRS,Semiweekly or monthly,Per IRS deposit schedule,All employers,EFTPS required; schedule based on prior lookback period
+United States,W-2 / W-3 forms,Payroll Tax,IRS / SSA,Annual,31 January (employee + SSA copy),All employers,Form W-3 transmits W-2s to SSA
+United States,1099-NEC (contractor payments),Tax Reporting,IRS,Annual,31 January,Payers of ≥ $600 to non-employees,Filed with recipient and IRS; e-file mandatory at 10+ returns
+United States,1099-MISC (other payments),Tax Reporting,IRS,Annual,28 February (paper) / 31 March (e-file),"Rents, royalties, prizes, attorney payments etc.",Recipient copy due 31 January
+United States,1099-DIV / 1099-INT,Tax Reporting,IRS,Annual,31 January (recipient),Payers of dividends/interest,Filed with IRS by end of February/March
+United States,Form 5472 (foreign-owned reporting),Tax,IRS,Annual,With Form 1120,25%+ foreign-owned US corporations and foreign-owned single-member LLCs,$25000 minimum penalty for non-filing — applies even with no income
+United States,Form 6765 (R&D tax credit),Tax,IRS,Annual,With Form 1120,Companies with qualifying R&D expenses,Section 174 capitalisation rules also apply
+United States,Form 5500 (employee benefit plans),Tax / Labour,IRS / DOL,Annual,Last day of 7th month after plan year end (31 July for calendar year),Sponsors of qualified retirement plans (401k etc.) and welfare plans,Filed via EFAST2; small plans may use 5500-SF
+United States,Form 1094-C / 1095-C (ACA),Tax,IRS,Annual,28 Feb paper / 31 March e-file (IRS); 2 March (recipient),Applicable Large Employers (50+ FTE),Reports health coverage offered to full-time employees
+United States,FBAR (FinCEN 114),Financial Reporting,FinCEN,Annual,15 April (auto-extended to 15 October),US persons/entities with foreign financial accounts > $10000 aggregate,Filed via BSA E-Filing system separately from tax return
+United States,FATCA reporting (Form 8938),Tax,IRS,Annual,With Form 1120,US entities with specified foreign financial assets above thresholds,Different from FBAR; both may apply
+United States,BOI report (Beneficial Ownership),Financial Reporting,FinCEN,Initial + on changes,30 days from registration,Foreign-formed entities registered to do business in US (domestic US entities EXEMPT under March 2025 interim final rule),Status fluid — final rule expected 2026; domestic exemption could change
+United States,Delaware franchise tax + annual report,State Tax,Delaware Division of Corporations,Annual,1 March,All Delaware corporations,Minimum $400 (Authorised Shares method) or $400 (Assumed Par Value Capital method); minimum $50 annual report fee
+United States,State income / franchise tax,State Tax,State revenue department,Annual + estimated quarterly,Generally aligned with federal but varies,Companies with nexus in any state with corporate income tax,No corporate income tax in NV SD WY; gross receipts states (TX OH WA OR) differ
+United States,State annual report / Statement of Information,Corporate,Secretary of State (each state),Annual or biennial,Varies by state,All companies registered in that state,California: due annually on registration anniversary; failure to file = suspension
+United States,Sales & use tax registration and returns,State Tax,State revenue department,Monthly / quarterly / annual,Varies by state and volume,Companies with sales tax nexus (post-Wayfair economic nexus thresholds),Each state has own threshold (typically $100k sales or 200 transactions); ~45 states + DC + localities
+United States,State payroll tax withholding,Payroll Tax,State revenue department,Per pay cycle / quarterly,Varies by state,Employers in states with income tax,9 states have no personal income tax
+United States,State Unemployment Insurance (SUI),Payroll Tax,State workforce agency,Quarterly,Last day of month following quarter,All employers,Rate varies by state and experience rating
+United States,Workers' compensation insurance,State Tax,State (or private carrier),Annual policy + audit,Per state,All employers (varies by state and headcount),Mandatory in nearly all states; premium based on payroll and class codes
+United States,Maintain financial records,Record Keeping,IRD/state,Ongoing,Continuous,All companies,Generally 7 years for tax records; longer for some items (e.g. property)
+United States,Registered agent,Corporate,Secretary of State,Ongoing,Continuous,All registered companies,Required in state of incorporation and every state where qualified to do business
+United States,Foreign qualification,Corporate,Secretary of State,Initial + ongoing,Before doing business in non-home state,Companies operating in states other than state of incorporation,Failure can void contracts and trigger back-taxes/penalties
+United States,SEC reporting (if applicable),Financial Reporting,SEC,Quarterly + annual,10-Q within 40-45 days; 10-K within 60-90 days,Public reporting companies and exempt offerings under Reg A/D,Includes 8-K for material events
+United States,SOX compliance (if applicable),Financial Reporting,SEC / PCAOB,Annual,With 10-K,SEC-reporting companies,Section 404 internal controls; auditor attestation for accelerated filers
+United States,GAAP financial statements,Financial Reporting,Various (lenders/investors),Annual + interim,Per agreement,"Companies with debt covenants, investors, or M&A activity",US GAAP per FASB; audit/review/compilation level set by stakeholder
+United States,AML/BSA program,Financial Services,FinCEN / federal banking regulators,Ongoing,Continuous,"Banks, MSBs, broker-dealers, investment advisers (phased in)",Customer identification SAR/CTR filings independent compliance officer
+United States,1042-S (payments to foreign persons),Tax Reporting,IRS,Annual,15 March,Payers of US-source income to non-US persons,Withholding required at 30% (or treaty rate) on most US-source FDAP income
