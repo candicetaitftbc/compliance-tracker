@@ -62,20 +62,21 @@
   .undo-banner .undo-btn { background: #f59e0b; border-color: #d97706; color: white; }
   .undo-banner .undo-btn:hover { background: #d97706; }
   .undo-banner .dismiss-btn { background: transparent; border-color: #d97706; color: #78350f; }
-  .company-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-  .company-column { background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
-  .column-header { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
-  .column-name { font-weight: 600; font-size: 13px; color: #0f172a; line-height: 1.3; }
-  .column-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
-  .column-task { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
-  .column-task:last-child { border-bottom: none; }
-  .column-task:hover { background: #f8fafc; }
-  .column-task .checkbox { width: 22px; height: 22px; font-size: 12px; }
-  .column-task-body { flex: 1; min-width: 0; }
-  .column-task-name { font-size: 12.5px; font-weight: 500; color: #0f172a; line-height: 1.35; margin-bottom: 4px; word-break: break-word; }
-  .column-task-meta { font-size: 11px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .column-task-meta .due { color: #64748b; }
-  .column-empty { padding: 14px; text-align: center; font-size: 12px; color: #94a3b8; }
+  .portfolio-table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+  .portfolio-table th { background: #f8fafc; text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #e2e8f0; }
+  .portfolio-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; vertical-align: middle; }
+  .portfolio-table tr:last-child td { border-bottom: none; }
+  .portfolio-table tr:hover td { background: #f8fafc; }
+  .portfolio-table .pt-co { display: flex; align-items: center; gap: 8px; }
+  .portfolio-table .pt-co-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .portfolio-table .pt-co-name { font-weight: 500; color: #0f172a; cursor: pointer; }
+  .portfolio-table .pt-co-name:hover { text-decoration: underline; }
+  .portfolio-table .pt-tag { font-size: 10px; background: #f1f5f9; color: #475569; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+  .portfolio-table .pt-date { white-space: nowrap; }
+  .portfolio-table .pt-countdown { font-size: 11px; margin-left: 6px; font-weight: 500; }
+  .portfolio-table .pt-filing { color: #0f172a; }
+  .portfolio-table .pt-done { width: 60px; text-align: center; }
+  .portfolio-table .checkbox { width: 22px; height: 22px; font-size: 12px; margin: 0 auto; }
   .nav { display: flex; border-bottom: 1px solid #e2e8f0; margin: 16px 0; gap: 4px; flex-wrap: wrap; }
   .companies { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .modal-bg { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -776,17 +777,12 @@ function renderPortfolio() {
   const future = open.filter(t => statusFor(t) === 'future');
   const done = allTasks.filter(t => t.completed);
 
-  const companyColumns = state.companies.map(co => {
-    const tasks = open
-      .filter(t => t.companyId === co.id)
-      .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-    return { co, tasks };
-  });
+  const sorted = open.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   return `
     <div style="margin-bottom: 16px;">
       <h2 style="margin-bottom: 4px;">Portfolio overview</h2>
-      <p style="font-size: 12px; color: #64748b; margin: 0;">All deadlines across ${state.companies.length} companies</p>
+      <p style="font-size: 12px; color: #64748b; margin: 0;">${open.length} open deadlines across ${state.companies.length} companies, sorted by due date</p>
     </div>
     <div class="grid-stats">
       <div class="stat red"><div class="v">${overdue.length}</div><div class="l">Overdue</div></div>
@@ -795,40 +791,48 @@ function renderPortfolio() {
       <div class="stat slate"><div class="v">${future.length}</div><div class="l">Later</div></div>
       <div class="stat green"><div class="v">${done.length}</div><div class="l">Done</div></div>
     </div>
-    ${overdue.length > 0 ? `
-      <h2 style="color: #b91c1c; margin-top: 24px;">⚠ Overdue across portfolio</h2>
-      <div class="card" style="padding: 0; margin-bottom: 16px; border-color: #fecaca;">${overdue.map(t => portfolioTaskRow(t)).join('')}</div>
-    ` : ''}
-    <h2 style="margin-top: 24px; margin-bottom: 12px;">Upcoming by company</h2>
-    <div class="company-columns">
-      ${companyColumns.map(({ co, tasks }) => `
-        <div class="company-column">
-          <div class="column-header" style="border-left: 4px solid ${getCompanyColor(co.id)};">
-            <div class="column-name" style="cursor: pointer;" onclick="selectCompany('${co.id}'); setView('dashboard')" title="Open dashboard">${escHTML(co.name)}</div>
-            <div class="column-meta">${tasks.length} open · ${co.domicile === 'Australia' ? 'AU' : co.domicile === 'New Zealand' ? 'NZ' : 'US'}</div>
-          </div>
-          ${tasks.length === 0 ? '<div class="column-empty">No open tasks</div>' : tasks.map(t => columnTaskRow(t)).join('')}
-        </div>
-      `).join('')}
-    </div>
+    ${sorted.length === 0 ? '<div class="empty">No open deadlines.</div>' : `
+      <table class="portfolio-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Due date</th>
+            <th>Filing</th>
+            <th class="pt-done">Done</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map(t => portfolioTableRow(t)).join('')}
+        </tbody>
+      </table>
+    `}
   `;
 }
 
-function columnTaskRow(t) {
+function portfolioTableRow(t) {
+  const co = state.companies.find(c => c.id === t.companyId);
   const status = statusFor(t);
   const days = daysBetween(todayISO(), t.dueDate);
   const countdown = days < 0 ? Math.abs(days) + 'd ago' : days === 0 ? 'today' : 'in ' + days + 'd';
+  const tag = co && (co.domicile === 'Australia' ? 'AU' : co.domicile === 'New Zealand' ? 'NZ' : 'US') || '';
   return `
-    <div class="column-task">
-      <button class="checkbox" onclick="completeTask('${t.id}')" title="Click to mark complete">☐</button>
-      <div class="column-task-body">
-        <div class="column-task-name">${escHTML(t.name)}</div>
-        <div class="column-task-meta">
-          <span class="countdown ${status}">${countdown}</span>
-          <span class="due">${formatDate(t.dueDate)}</span>
+    <tr>
+      <td>
+        <div class="pt-co">
+          <span class="pt-co-dot" style="background: ${getCompanyColor(t.companyId)};"></span>
+          <span class="pt-co-name" onclick="selectCompany('${t.companyId}'); setView('dashboard')" title="Open dashboard">${escHTML(co ? co.name : '?')}</span>
+          <span class="pt-tag">${tag}</span>
         </div>
-      </div>
-    </div>
+      </td>
+      <td class="pt-date">
+        ${formatDate(t.dueDate)}
+        <span class="pt-countdown countdown ${status}">${countdown}</span>
+      </td>
+      <td class="pt-filing">${escHTML(t.name)}</td>
+      <td class="pt-done">
+        <button class="checkbox" onclick="completeTask('${t.id}')" title="Click to mark complete">☐</button>
+      </td>
+    </tr>
   `;
 }
 
