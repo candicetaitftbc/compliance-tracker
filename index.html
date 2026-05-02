@@ -234,7 +234,7 @@ const REAL_PORTFOLIO = {
     { id: "req-ftbc-ir4", companyId: "co-ftbc-001", name: "IR4 company income tax return", category: "Tax", regulator: "IRD", frequency: "Annual", timing: "7 July (or up to 31 March via tax agent)", notes: "Corporate tax rate 28%. Year end 31 March." },
     { id: "req-ftbc-prov", companyId: "co-ftbc-001", name: "Provisional tax", category: "Tax", regulator: "IRD", frequency: "Three instalments", timing: "28 Aug / 15 Jan / 7 May", notes: "Likely liable from FY27 onward (after 31 Mar 2026 RIT)." },
     { id: "req-ftbc-gst", companyId: "co-ftbc-001", name: "GST returns (6-monthly)", category: "Tax", regulator: "IRD", frequency: "6-monthly", timing: "28th of month after period (28 Jul / 28 Jan)", notes: "GST registered. Standard rate 15%." },
-    { id: "req-ftbc-paye", companyId: "co-ftbc-001", name: "PAYE / payday filing", category: "Payroll Tax", regulator: "IRD", frequency: "Per pay run", timing: "Within 2 working days of payday", notes: "1 employee. Real-time filing." },
+    { id: "req-ftbc-paye", companyId: "co-ftbc-001", name: "PAYE payment", category: "Payroll Tax", regulator: "IRD", frequency: "Monthly", timing: "20th of month following pay period (monthly filer — under $500k/year)", notes: "1 employee. Pay PAYE deducted to IRD by the 20th of the following month. Payday filing of employment info is separate (handled by payroll software in real-time)." },
     { id: "req-ftbc-ks", companyId: "co-ftbc-001", name: "KiwiSaver employer contributions", category: "Payroll Tax", regulator: "IRD", frequency: "Per pay run", timing: "With PAYE", notes: "Minimum 3% employer contribution." },
     { id: "req-ftbc-acc", companyId: "co-ftbc-001", name: "ACC employer levies", category: "Payroll Tax", regulator: "ACC", frequency: "Annual invoice", timing: "ACC sends invoice — no proactive deadline", notes: "Work levy + Earner levy. Invoiced annually." },
 
@@ -270,7 +270,7 @@ const REAL_PORTFOLIO = {
     { id: "task-ftbc-prov-fy27-p3", companyId: "co-ftbc-001", requirementId: "req-ftbc-prov", name: "Provisional tax FY27 — instalment 3", dueDate: "2027-05-07", priority: "Medium", completed: false, notes: "Standard balance date 31 Mar." },
     { id: "task-ftbc-gst-h1-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-gst", name: "GST return (1 Jan – 30 Jun 2026)", dueDate: "2026-07-28", priority: "High", completed: false, notes: "6-monthly cycle. Period: 1 Jan – 30 Jun 2026." },
     { id: "task-ftbc-gst-h2-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-gst", name: "GST return (1 Jul – 31 Dec 2026)", dueDate: "2027-01-28", priority: "Medium", completed: false, notes: "6-monthly cycle. Period: 1 Jul – 31 Dec 2026." },
-    { id: "task-ftbc-paye", companyId: "co-ftbc-001", requirementId: "req-ftbc-paye", name: "PAYE / payday filing — ongoing", dueDate: "2026-05-31", priority: "Medium", completed: false, notes: "Ongoing — file within 2 working days of each payday. Reset due date each month." },
+    { id: "task-ftbc-paye", companyId: "co-ftbc-001", requirementId: "req-ftbc-paye", name: "PAYE payment (Apr 2026 payroll)", dueDate: "2026-05-20", priority: "Medium", completed: false, notes: "Pay PAYE deducted from April 2026 payroll. Due 20th of following month." },
     { id: "task-ftbc-ks", companyId: "co-ftbc-001", requirementId: "req-ftbc-ks", name: "KiwiSaver employer contributions — ongoing", dueDate: "2026-05-31", priority: "Medium", completed: false, notes: "Paid with PAYE. Minimum 3% employer contribution." },
     { id: "task-ftbc-acc-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-acc", name: "ACC employer levy invoice", dueDate: "2026-09-01", priority: "Low", completed: false, notes: "ACC issues invoice annually — no proactive deadline. Update task once invoice arrives." },
 
@@ -444,6 +444,26 @@ function runMigrations() {
     state.tasks.push(...REAL_PORTFOLIO.tasks.filter(t => t.companyId === 'co-ahayus-001').map(t => ({ ...t })));
     persistAll();
     done.push('reset_ahayus_2026_05_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: rename FTBC PAYE to "PAYE payment" + set 20th-of-month rule
+  if (!done.includes('ftbc_paye_rename_v1')) {
+    const req = state.requirements.find(r => r.id === 'req-ftbc-paye');
+    if (req) {
+      req.name = 'PAYE payment';
+      req.frequency = 'Monthly';
+      req.timing = '20th of month following pay period (monthly filer — under $500k/year)';
+      req.notes = '1 employee. Pay PAYE deducted to IRD by the 20th of the following month. Payday filing of employment info is separate (handled by payroll software in real-time).';
+    }
+    const task = state.tasks.find(t => t.id === 'task-ftbc-paye');
+    if (task) {
+      task.name = 'PAYE payment (Apr 2026 payroll)';
+      task.dueDate = '2026-05-20';
+      task.notes = 'Pay PAYE deducted from April 2026 payroll. Due 20th of following month.';
+    }
+    persistAll();
+    done.push('ftbc_paye_rename_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 }
