@@ -717,7 +717,7 @@ function render() {
       <p style="color: #64748b; font-size: 11px; margin: 4px 0 0;">v${VERSION} · Data stored in this browser. Use Share → Backup to save a portable copy.</p>
     </header>
 
-    <div class="companies" style="${state.view === 'portfolio' ? 'display: none;' : ''}">
+    <div class="companies" style="${state.view === 'portfolio' || state.view === 'companies' ? 'display: none;' : ''}">
       ${state.companies.map(c => `
         <button class="chip ${c.id === state.selectedId ? 'active' : ''}" onclick="selectCompany('${c.id}')">
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${getCompanyColor(c.id)}; margin-right: 6px; vertical-align: middle;"></span>
