@@ -62,6 +62,20 @@
   .undo-banner .undo-btn { background: #f59e0b; border-color: #d97706; color: white; }
   .undo-banner .undo-btn:hover { background: #d97706; }
   .undo-banner .dismiss-btn { background: transparent; border-color: #d97706; color: #78350f; }
+  .company-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .company-column { background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+  .column-header { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
+  .column-name { font-weight: 600; font-size: 13px; color: #0f172a; line-height: 1.3; }
+  .column-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .column-task { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
+  .column-task:last-child { border-bottom: none; }
+  .column-task:hover { background: #f8fafc; }
+  .column-task .checkbox { width: 22px; height: 22px; font-size: 12px; }
+  .column-task-body { flex: 1; min-width: 0; }
+  .column-task-name { font-size: 12.5px; font-weight: 500; color: #0f172a; line-height: 1.35; margin-bottom: 4px; word-break: break-word; }
+  .column-task-meta { font-size: 11px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .column-task-meta .due { color: #64748b; }
+  .column-empty { padding: 14px; text-align: center; font-size: 12px; color: #94a3b8; }
   .nav { display: flex; border-bottom: 1px solid #e2e8f0; margin: 16px 0; gap: 4px; flex-wrap: wrap; }
   .companies { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .modal-bg { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -761,42 +775,13 @@ function renderPortfolio() {
   const upcoming = open.filter(t => statusFor(t) === 'upcoming');
   const future = open.filter(t => statusFor(t) === 'future');
   const done = allTasks.filter(t => t.completed);
-  const next4 = open.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 4);
 
-  const { y, m } = state.calCursor;
-  const monthName = new Date(y, m, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
-  const firstWeekday = new Date(y, m, 1).getDay();
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const byDate = {};
-  allTasks.forEach(t => {
-    const d = new Date(t.dueDate);
-    if (d.getFullYear() === y && d.getMonth() === m) {
-      const day = d.getDate();
-      (byDate[day] = byDate[day] || []).push(t);
-    }
+  const companyColumns = state.companies.map(co => {
+    const tasks = open
+      .filter(t => t.companyId === co.id)
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    return { co, tasks };
   });
-
-  let cells = '';
-  for (let i = 0; i < firstWeekday; i++) cells += '<div class="cal-day" style="background: #f8fafc;"></div>';
-  const today = new Date();
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
-    const dayT = (byDate[d] || []).sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      const order = { overdue: 0, urgent: 1, upcoming: 2, future: 3 };
-      return (order[statusFor(a)] || 9) - (order[statusFor(b)] || 9);
-    });
-    const events = dayT.slice(0, 3).map(t => {
-      const co = state.companies.find(c => c.id === t.companyId);
-      const color = getCompanyColor(t.companyId);
-      const short = getCompanyShort(co);
-      const status = statusFor(t);
-      const title = `${co ? co.name : ''}: ${t.name}`;
-      return `<div class="ev ${status}" title="${escHTML(title)}" style="border-left: 3px solid ${color}; padding-left: 4px;"><span style="font-weight: 600; opacity: 0.85;">${short}</span> ${escHTML(t.name)}</div>`;
-    }).join('');
-    const more = dayT.length > 3 ? `<div class="task-meta" style="margin-top: 2px;">+${dayT.length - 3} more</div>` : '';
-    cells += `<div class="cal-day ${isToday ? 'today' : ''}"><div class="num">${d}</div>${events}${more}</div>`;
-  }
 
   return `
     <div style="margin-bottom: 16px;">
@@ -810,39 +795,40 @@ function renderPortfolio() {
       <div class="stat slate"><div class="v">${future.length}</div><div class="l">Later</div></div>
       <div class="stat green"><div class="v">${done.length}</div><div class="l">Done</div></div>
     </div>
-    <div class="row" style="margin-bottom: 8px; gap: 12px;">
-      ${state.companies.map(c => `
-        <span class="legend-item" style="cursor: pointer;" onclick="selectCompany('${c.id}'); setView('dashboard')">
-          <span class="dot" style="background: ${getCompanyColor(c.id)};"></span>
-          ${escHTML(c.name)}
-        </span>
-      `).join('')}
-    </div>
-    <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
-      <h2 style="margin: 0;">${monthName}</h2>
-      <div class="row">
-        <button onclick="navigateCal(-1)">←</button>
-        <button onclick="calToday()">today</button>
-        <button onclick="navigateCal(1)">→</button>
-      </div>
-    </div>
-    <div class="calendar">
-      ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-head">${d}</div>`).join('')}
-      ${cells}
-    </div>
-    <div class="legend">
-      <span class="legend-item"><span class="dot overdue"></span>Overdue</span>
-      <span class="legend-item"><span class="dot urgent"></span>≤ 7 days</span>
-      <span class="legend-item"><span class="dot upcoming"></span>≤ 14 days</span>
-      <span class="legend-item"><span class="dot future"></span>Future</span>
-      <span class="legend-item"><span class="dot done"></span>Done</span>
-    </div>
     ${overdue.length > 0 ? `
       <h2 style="color: #b91c1c; margin-top: 24px;">⚠ Overdue across portfolio</h2>
       <div class="card" style="padding: 0; margin-bottom: 16px; border-color: #fecaca;">${overdue.map(t => portfolioTaskRow(t)).join('')}</div>
     ` : ''}
-    <h2 style="margin-top: 24px;">Next 4 deadlines across portfolio</h2>
-    ${next4.length === 0 ? '<div class="empty">No open deadlines.</div>' : `<div class="card" style="padding: 0;">${next4.map(t => portfolioTaskRow(t)).join('')}</div>`}
+    <h2 style="margin-top: 24px; margin-bottom: 12px;">Upcoming by company</h2>
+    <div class="company-columns">
+      ${companyColumns.map(({ co, tasks }) => `
+        <div class="company-column">
+          <div class="column-header" style="border-left: 4px solid ${getCompanyColor(co.id)};">
+            <div class="column-name" style="cursor: pointer;" onclick="selectCompany('${co.id}'); setView('dashboard')" title="Open dashboard">${escHTML(co.name)}</div>
+            <div class="column-meta">${tasks.length} open · ${co.domicile === 'Australia' ? 'AU' : co.domicile === 'New Zealand' ? 'NZ' : 'US'}</div>
+          </div>
+          ${tasks.length === 0 ? '<div class="column-empty">No open tasks</div>' : tasks.map(t => columnTaskRow(t)).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function columnTaskRow(t) {
+  const status = statusFor(t);
+  const days = daysBetween(todayISO(), t.dueDate);
+  const countdown = days < 0 ? Math.abs(days) + 'd ago' : days === 0 ? 'today' : 'in ' + days + 'd';
+  return `
+    <div class="column-task">
+      <button class="checkbox" onclick="completeTask('${t.id}')" title="Click to mark complete">☐</button>
+      <div class="column-task-body">
+        <div class="column-task-name">${escHTML(t.name)}</div>
+        <div class="column-task-meta">
+          <span class="countdown ${status}">${countdown}</span>
+          <span class="due">${formatDate(t.dueDate)}</span>
+        </div>
+      </div>
+    </div>
   `;
 }
 
