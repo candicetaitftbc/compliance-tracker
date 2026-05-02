@@ -50,9 +50,18 @@
   .dot.upcoming { background: #eab308; }
   .dot.future { background: #94a3b8; }
   .dot.done { background: #22c55e; }
-  .checkbox { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #94a3b8; cursor: pointer; flex-shrink: 0; padding: 0; background: white; }
-  .checkbox:hover { border-color: #0f172a; }
-  .checkbox.done { background: #22c55e; border-color: #22c55e; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .checkbox { width: 26px; height: 26px; border-radius: 6px; border: 2px solid #94a3b8; cursor: pointer; flex-shrink: 0; padding: 0; background: white; display: flex; align-items: center; justify-content: center; font-size: 14px; color: transparent; transition: all 0.15s; }
+  .checkbox:hover { border-color: #16a34a; background: #f0fdf4; color: #86efac; }
+  .checkbox:hover::after { content: 'Mark done'; position: absolute; background: #0f172a; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 40px; white-space: nowrap; pointer-events: none; z-index: 100; }
+  .checkbox.done { background: #22c55e; border-color: #22c55e; color: white; }
+  .checkbox.done:hover { background: #ef4444; border-color: #ef4444; }
+  .checkbox.done:hover::after { content: 'Undo'; }
+  .undo-banner { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .undo-banner .msg { color: #78350f; font-size: 13px; }
+  .undo-banner button { padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; border: 1px solid; }
+  .undo-banner .undo-btn { background: #f59e0b; border-color: #d97706; color: white; }
+  .undo-banner .undo-btn:hover { background: #d97706; }
+  .undo-banner .dismiss-btn { background: transparent; border-color: #d97706; color: #78350f; }
   .nav { display: flex; border-bottom: 1px solid #e2e8f0; margin: 16px 0; gap: 4px; flex-wrap: wrap; }
   .companies { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .modal-bg { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -223,7 +232,7 @@ const REAL_PORTFOLIO = {
     { id: "req-ahayau-paygw", companyId: "co-ahayau-001", name: "PAYG withholding", category: "Tax", regulator: "ATO", frequency: "Per pay cycle", timing: "Reported via BAS/STP", notes: "Withhold tax from employee wages." },
     { id: "req-ahayau-bo", companyId: "co-ahayau-001", name: "Beneficial ownership register", category: "Corporate", regulator: "Internal", frequency: "Ongoing", timing: "On changes", notes: "Maintain internally." },
 
-    { id: "req-ahayus-1120", companyId: "co-ahayus-001", name: "Federal income tax return (Form 1120)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "15 April for calendar-year corps", notes: "Delaware C-Corp. EIN 35-2905636. Federal corporate rate 21%." },
+    { id: "req-ahayus-1120", companyId: "co-ahayus-001", name: "Federal income tax return (Form 1120)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "15 April for calendar-year corps", notes: "Delaware C-Corp. EIN 35-2905636. Federal corporate rate 21%. Registered Agent: Corporate Creations Network Inc., 1521 Concord Pike Suite 201, Wilmington DE 19803, ph 866-761-1444. DE File # 10232053." },
     { id: "req-ahayus-5472", companyId: "co-ahayus-001", name: "Form 5472 (foreign-owned reporting)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "Filed with Form 1120", notes: "$25k penalty for non-filing — required even with no income. AHAY US is foreign-owned (parent in AU)." },
     { id: "req-ahayus-de", companyId: "co-ahayus-001", name: "Delaware franchise tax + annual report", category: "State Tax", regulator: "DE Division of Corporations", frequency: "Annual", timing: "1 March", notes: "File # 10232053. Authorised shares 2,000 @ $0.01 par. Use Assumed Par Value Capital method (usually lower)." }
   ],
@@ -407,6 +416,21 @@ function runMigrations() {
     done.push('real_portfolio_2026_05_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
+
+  // Migration: reset AHAY US Corp tasks (accidental clicks on PENDING CHECK items)
+  // Wipes all AHAY US data and re-loads from REAL_PORTFOLIO. Other companies untouched.
+  if (!done.includes('reset_ahayus_2026_05_v1')) {
+    state.tasks = state.tasks.filter(t => t.companyId !== 'co-ahayus-001');
+    state.requirements = state.requirements.filter(r => r.companyId !== 'co-ahayus-001');
+    if (!state.companies.some(c => c.id === 'co-ahayus-001')) {
+      state.companies.push(...REAL_PORTFOLIO.companies.filter(c => c.id === 'co-ahayus-001').map(c => ({ ...c })));
+    }
+    state.requirements.push(...REAL_PORTFOLIO.requirements.filter(r => r.companyId === 'co-ahayus-001').map(r => ({ ...r })));
+    state.tasks.push(...REAL_PORTFOLIO.tasks.filter(t => t.companyId === 'co-ahayus-001').map(t => ({ ...t })));
+    persistAll();
+    done.push('reset_ahayus_2026_05_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
 }
 
 function seed() {
@@ -447,18 +471,41 @@ function setFilter(f) { state.taskFilter = f; render(); }
 function completeTask(id) {
   const t = state.tasks.find(x => x.id === id); if (!t) return;
   t.completed = true;
+  let spawnedTaskId = null;
   const req = state.requirements.find(r => r.id === t.requirementId);
   if (req && /quarter|month|annual|pay run|three/i.test(req.frequency || '')) {
     const co = state.companies.find(c => c.id === t.companyId);
-    state.tasks.push({ id: uid(), companyId: t.companyId, requirementId: t.requirementId, name: t.name, dueDate: suggestDueDate(co && co.taxYearEnd, req.frequency), priority: t.priority, completed: false, notes: '' });
+    spawnedTaskId = uid();
+    state.tasks.push({ id: spawnedTaskId, companyId: t.companyId, requirementId: t.requirementId, name: t.name, dueDate: suggestDueDate(co && co.taxYearEnd, req.frequency), priority: t.priority, completed: false, notes: '' });
   }
+  state.lastAction = { type: 'complete', taskId: id, taskName: t.name, spawnedTaskId };
   persist('tasks'); render();
 }
 
 function uncompleteTask(id) {
   const t = state.tasks.find(x => x.id === id); if (!t) return;
-  t.completed = false; persist('tasks'); render();
+  t.completed = false;
+  state.lastAction = { type: 'uncomplete', taskId: id, taskName: t.name };
+  persist('tasks'); render();
 }
+
+function undoLastAction() {
+  const a = state.lastAction; if (!a) return;
+  const t = state.tasks.find(x => x.id === a.taskId);
+  if (!t) { state.lastAction = null; render(); return; }
+  if (a.type === 'complete') {
+    t.completed = false;
+    if (a.spawnedTaskId) {
+      state.tasks = state.tasks.filter(x => x.id !== a.spawnedTaskId);
+    }
+  } else if (a.type === 'uncomplete') {
+    t.completed = true;
+  }
+  state.lastAction = null;
+  persist('tasks'); render();
+}
+
+function dismissLastAction() { state.lastAction = null; render(); }
 
 function addCompany(data) {
   const co = { ...data, id: uid(), active: true };
@@ -676,6 +723,15 @@ function render() {
     </nav>
 
     <main>
+      ${state.lastAction ? `
+        <div class="undo-banner">
+          <span class="msg">${state.lastAction.type === 'complete' ? 'Marked' : 'Reopened'} <strong>${escHTML(state.lastAction.taskName)}</strong>${state.lastAction.spawnedTaskId ? ' (next instance auto-created)' : ''}.</span>
+          <span style="display: flex; gap: 6px;">
+            <button class="undo-btn" onclick="undoLastAction()">↶ Undo</button>
+            <button class="dismiss-btn" onclick="dismissLastAction()">Dismiss</button>
+          </span>
+        </div>
+      ` : ''}
       ${state.view === 'portfolio' ? renderPortfolio() : (co ? renderView(co) : '<div class="empty">Add a company to begin.</div>')}
     </main>
 
@@ -800,7 +856,7 @@ function portfolioTaskRow(t) {
   const color = getCompanyColor(t.companyId);
   return `
     <div class="task-row" style="border-left: 3px solid ${color};">
-      <button class="checkbox ${t.completed ? 'done' : ''}" onclick="${checkAction}">${t.completed ? '✓' : ''}</button>
+      <button class="checkbox ${t.completed ? 'done' : ''}" onclick="${checkAction}" title="${t.completed ? 'Click to undo (mark incomplete)' : 'Click to mark complete'}">${t.completed ? '✓' : '☐'}</button>
       <div style="flex: 1; min-width: 0;">
         <div class="task-name ${t.completed ? 'done' : ''}">${escHTML(t.name)}</div>
         <div class="task-meta">
@@ -866,7 +922,7 @@ function taskRowHTML(t, reqs, compact) {
   const checkAction = t.completed ? `uncompleteTask('${t.id}')` : `completeTask('${t.id}')`;
   return `
     <div class="task-row">
-      <button class="checkbox ${t.completed ? 'done' : ''}" onclick="${checkAction}">${t.completed ? '✓' : ''}</button>
+      <button class="checkbox ${t.completed ? 'done' : ''}" onclick="${checkAction}" title="${t.completed ? 'Click to undo (mark incomplete)' : 'Click to mark complete'}">${t.completed ? '✓' : '☐'}</button>
       <div style="flex: 1; min-width: 0;">
         <div class="task-name ${t.completed ? 'done' : ''}">${escHTML(t.name)}</div>
         ${!compact && req ? `<div class="task-meta">${escHTML(req.regulator)} · ${escHTML(req.frequency)} · ${escHTML(req.category)}</div>` : ''}
