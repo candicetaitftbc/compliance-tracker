@@ -68,6 +68,12 @@
   .company-picker select:hover { border-color: #94a3b8; }
   .company-picker select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
   .company-picker .picker-color { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .company-info { background: #f8fafc; border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-size: 11.5px; color: #475569; line-height: 1.5; }
+  .company-info .info-row { display: flex; gap: 6px; margin-top: 2px; }
+  .company-info .info-label { color: #94a3b8; font-weight: 500; min-width: 70px; flex-shrink: 0; }
+  .company-info .info-val { color: #0f172a; word-break: break-word; }
+  .form-section { margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+  .form-section h4 { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 8px; font-weight: 600; }
   .portfolio-table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
   .portfolio-table th { background: #f8fafc; text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #e2e8f0; }
   .portfolio-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; vertical-align: middle; }
@@ -220,11 +226,11 @@ const COUNTRIES = ['Australia', 'New Zealand', 'United States'];
 // 5 entities, 25 requirements, 36 tasks (8 flagged PENDING CHECK).
 const REAL_PORTFOLIO = {
   companies: [
-    { id: "co-dbau-001", name: "DISPUTE BUDDY AUSTRALIA PTY LTD", domicile: "Australia", industry: "SaaS", taxYearEnd: "06-30", active: true },
-    { id: "co-dbnz-001", name: "DISPUTE BUDDY LIMITED (NZ — dormant)", domicile: "New Zealand", industry: "SaaS subsidiary — dormant", taxYearEnd: "03-31", active: true },
-    { id: "co-ftbc-001", name: "Founded To Be Counted", domicile: "New Zealand", industry: "Financial confidence platform", taxYearEnd: "03-31", active: true },
-    { id: "co-ahayau-001", name: "AHAY Society Pty Ltd (Clutch Australia)", domicile: "Australia", industry: "Consumer Products", taxYearEnd: "06-30", active: true },
-    { id: "co-ahayus-001", name: "AHAY Society Corp (Clutch US — Delaware C-Corp)", domicile: "United States", industry: "Consumer Products", taxYearEnd: "12-31", active: true }
+    { id: "co-dbau-001", name: "DISPUTE BUDDY AUSTRALIA PTY LTD", domicile: "Australia", industry: "SaaS", taxYearEnd: "06-30", active: true, registrationNumber: "ABN 85 679 055 639", registrationDate: "2024-07-25", advisor: {}, bookkeeper: {}, notes: "" },
+    { id: "co-dbnz-001", name: "DISPUTE BUDDY LIMITED (NZ — dormant)", domicile: "New Zealand", industry: "SaaS subsidiary — dormant", taxYearEnd: "03-31", active: true, registrationNumber: "NZBN 9429050853922", registrationDate: "2022-09-22", advisor: {}, bookkeeper: {}, notes: "Owned by Dispute Buddy Australia Pty Ltd. Dormant entity." },
+    { id: "co-ftbc-001", name: "Founded To Be Counted", domicile: "New Zealand", industry: "Financial confidence platform", taxYearEnd: "03-31", active: true, registrationNumber: "", registrationDate: "", advisor: {}, bookkeeper: {}, notes: "" },
+    { id: "co-ahayau-001", name: "AHAY Society Pty Ltd (Clutch Australia)", domicile: "Australia", industry: "Consumer Products", taxYearEnd: "06-30", active: true, registrationNumber: "ABN 61 652 694 454 · ACN 652 694 454", registrationDate: "2021-08-10", advisor: {}, bookkeeper: {}, notes: "" },
+    { id: "co-ahayus-001", name: "AHAY Society Corp (Clutch US — Delaware C-Corp)", domicile: "United States", industry: "Consumer Products", taxYearEnd: "12-31", active: true, registrationNumber: "EIN 35-2905636 · DE File 10232053", registrationDate: "2025-06-18", advisor: {}, bookkeeper: {}, notes: "Registered Agent: Corporate Creations Network Inc., 1521 Concord Pike Suite 201, Wilmington DE 19803, ph 866-761-1444." }
   ],
   requirements: [
     { id: "req-dbau-asic", companyId: "co-dbau-001", name: "ASIC annual review & fee", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Anniversary of registration (25 Jul)", notes: "ABN 85 679 055 639. Active from 25 Jul 2024. Standard Pty Ltd fee ~$329." },
@@ -470,6 +476,33 @@ function runMigrations() {
     }
     persistAll();
     done.push('ftbc_paye_rename_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: backfill registration #s and entity details from REAL_PORTFOLIO
+  if (!done.includes('backfill_company_details_v1')) {
+    for (const src of REAL_PORTFOLIO.companies) {
+      const c = state.companies.find(x => x.id === src.id);
+      if (c) {
+        if (!c.registrationNumber) c.registrationNumber = src.registrationNumber || '';
+        if (!c.registrationDate) c.registrationDate = src.registrationDate || '';
+        if (!c.advisor) c.advisor = src.advisor || {};
+        if (!c.bookkeeper) c.bookkeeper = src.bookkeeper || {};
+        if (!c.notes) c.notes = src.notes || '';
+      }
+    }
+    persist('companies');
+    done.push('backfill_company_details_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: reset DB AU BAS tasks (previous accidental complete left a
+  // mis-named auto-spawned task at +60 days from completion).
+  if (!done.includes('reset_dbau_bas_v1')) {
+    state.tasks = state.tasks.filter(t => !(t.companyId === 'co-dbau-001' && t.requirementId === 'req-dbau-bas'));
+    state.tasks.push(...REAL_PORTFOLIO.tasks.filter(t => t.companyId === 'co-dbau-001' && t.requirementId === 'req-dbau-bas').map(t => ({ ...t })));
+    persist('tasks');
+    done.push('reset_dbau_bas_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 }
@@ -1083,11 +1116,14 @@ function renderCompanies() {
       <p style="font-size: 13px; color: #64748b; margin: 0;">${state.companies.length} companies</p>
       <button onclick="openModal('add-company')">+ Add company</button>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
       ${state.companies.map(c => {
         const ct = state.tasks.filter(t => t.companyId === c.id && !t.completed);
         const ov = ct.filter(t => statusFor(t) === 'overdue').length;
         const ur = ct.filter(t => statusFor(t) === 'urgent').length;
+        const advisor = c.advisor || {};
+        const bookkeeper = c.bookkeeper || {};
+        const hasInfo = c.registrationNumber || c.registrationDate || advisor.name || bookkeeper.name || c.notes;
         return `
           <div class="card">
             <div class="row" style="justify-content: space-between; align-items: flex-start;">
@@ -1095,14 +1131,26 @@ function renderCompanies() {
                 <h3>${escHTML(c.name)}</h3>
                 <p class="task-meta" style="margin-top: 2px;">${escHTML(c.domicile)} · FYE ${escHTML(c.taxYearEnd || '—')}</p>
               </div>
-              <button class="icon-btn" onclick="deleteCompany('${c.id}')">🗑</button>
+              <button class="icon-btn" onclick="deleteCompany('${c.id}')" title="Delete">🗑</button>
             </div>
+            ${hasInfo ? `
+              <div class="company-info">
+                ${c.registrationNumber ? `<div class="info-row"><span class="info-label">Reg #:</span><span class="info-val">${escHTML(c.registrationNumber)}</span></div>` : ''}
+                ${c.registrationDate ? `<div class="info-row"><span class="info-label">Registered:</span><span class="info-val">${escHTML(formatDate(c.registrationDate))}</span></div>` : ''}
+                ${advisor.name ? `<div class="info-row"><span class="info-label">Tax advisor:</span><span class="info-val">${escHTML(advisor.name)}${advisor.firm ? ' · ' + escHTML(advisor.firm) : ''}${advisor.email ? ' · ' + escHTML(advisor.email) : ''}${advisor.phone ? ' · ' + escHTML(advisor.phone) : ''}</span></div>` : ''}
+                ${bookkeeper.name ? `<div class="info-row"><span class="info-label">Bookkeeper:</span><span class="info-val">${escHTML(bookkeeper.name)}${bookkeeper.firm ? ' · ' + escHTML(bookkeeper.firm) : ''}${bookkeeper.email ? ' · ' + escHTML(bookkeeper.email) : ''}${bookkeeper.phone ? ' · ' + escHTML(bookkeeper.phone) : ''}</span></div>` : ''}
+                ${c.notes ? `<div class="info-row"><span class="info-label">Notes:</span><span class="info-val">${escHTML(c.notes)}</span></div>` : ''}
+              </div>
+            ` : ''}
             <div class="row" style="margin-top: 10px; font-size: 12px;">
               ${ov > 0 ? `<span style="color: #b91c1c;">${ov} overdue</span>` : ''}
               ${ur > 0 ? `<span style="color: #b45309;">${ur} urgent</span>` : ''}
               <span class="task-meta" style="margin-left: auto;">${ct.length} open</span>
             </div>
-            <button onclick="selectCompany('${c.id}'); setView('dashboard')" style="margin-top: 10px;">Open →</button>
+            <div class="row" style="margin-top: 10px; gap: 6px;">
+              <button onclick="selectCompany('${c.id}'); setView('dashboard')">Open →</button>
+              <button onclick="editCompany('${c.id}')">✎ Edit details</button>
+            </div>
           </div>
         `;
       }).join('')}
@@ -1110,8 +1158,108 @@ function renderCompanies() {
   `;
 }
 
+function editCompany(id) {
+  state.modal = 'edit-company';
+  state.editingCompanyId = id;
+  render();
+}
+
+function submitEditCompany() {
+  const id = state.editingCompanyId;
+  const c = state.companies.find(x => x.id === id);
+  if (!c) return;
+  c.name = document.getElementById('ec-name').value.trim();
+  c.domicile = document.getElementById('ec-dom').value;
+  c.industry = document.getElementById('ec-ind').value.trim();
+  c.taxYearEnd = document.getElementById('ec-fye').value.trim();
+  c.registrationNumber = document.getElementById('ec-regnum').value.trim();
+  c.registrationDate = document.getElementById('ec-regdate').value;
+  c.advisor = {
+    name: document.getElementById('ec-adv-name').value.trim(),
+    firm: document.getElementById('ec-adv-firm').value.trim(),
+    email: document.getElementById('ec-adv-email').value.trim(),
+    phone: document.getElementById('ec-adv-phone').value.trim(),
+  };
+  c.bookkeeper = {
+    name: document.getElementById('ec-bk-name').value.trim(),
+    firm: document.getElementById('ec-bk-firm').value.trim(),
+    email: document.getElementById('ec-bk-email').value.trim(),
+    phone: document.getElementById('ec-bk-phone').value.trim(),
+  };
+  c.notes = document.getElementById('ec-notes').value.trim();
+  persist('companies');
+  closeModal();
+}
+
+function renderEditCompanyModal() {
+  const c = state.companies.find(x => x.id === state.editingCompanyId);
+  if (!c) return '';
+  const a = c.advisor || {};
+  const b = c.bookkeeper || {};
+  return `
+    <div class="modal-bg" onclick="if(event.target===this) closeModal()">
+      <div class="modal" style="max-width: 560px;">
+        <div class="modal-head">
+          <h3>Edit company</h3>
+          <button class="icon-btn" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <form onsubmit="event.preventDefault(); submitEditCompany()">
+            <div class="form-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+              <h4>Basic</h4>
+              <div class="field"><label>Company name *</label><input id="ec-name" value="${escHTML(c.name)}" required></div>
+              <div class="row" style="gap: 8px;">
+                <div class="field" style="flex: 1;"><label>Domicile</label>
+                  <select id="ec-dom">${COUNTRIES.map(x => `<option ${x === c.domicile ? 'selected' : ''}>${x}</option>`).join('')}</select>
+                </div>
+                <div class="field" style="flex: 1;"><label>FYE (MM-DD)</label><input id="ec-fye" value="${escHTML(c.taxYearEnd || '')}"></div>
+              </div>
+              <div class="field"><label>Industry</label><input id="ec-ind" value="${escHTML(c.industry || '')}"></div>
+              <div class="row" style="gap: 8px;">
+                <div class="field" style="flex: 2;"><label>Registration # (ABN / EIN / NZBN / etc.)</label><input id="ec-regnum" value="${escHTML(c.registrationNumber || '')}"></div>
+                <div class="field" style="flex: 1;"><label>Registered date</label><input id="ec-regdate" type="date" value="${escHTML(c.registrationDate || '')}"></div>
+              </div>
+            </div>
+            <div class="form-section">
+              <h4>Tax advisor</h4>
+              <div class="row" style="gap: 8px;">
+                <div class="field" style="flex: 1;"><label>Name</label><input id="ec-adv-name" value="${escHTML(a.name || '')}"></div>
+                <div class="field" style="flex: 1;"><label>Firm</label><input id="ec-adv-firm" value="${escHTML(a.firm || '')}"></div>
+              </div>
+              <div class="row" style="gap: 8px;">
+                <div class="field" style="flex: 1;"><label>Email</label><input id="ec-adv-email" value="${escHTML(a.email || '')}"></div>
+                <div class="field" style="flex: 1;"><label>Phone</label><input id="ec-adv-phone" value="${escHTML(a.phone || '')}"></div>
+              </div>
+            </div>
+            <div class="form-section">
+              <h4>Bookkeeper</h4>
+              <div class="row" style="gap: 8px;">
+                <div class="field" style="flex: 1;"><label>Name</label><input id="ec-bk-name" value="${escHTML(b.name || '')}"></div>
+                <div class="field" style="flex: 1;"><label>Firm</label><input id="ec-bk-firm" value="${escHTML(b.firm || '')}"></div>
+              </div>
+              <div class="row" style="gap: 8px;">
+                <div class="field" style="flex: 1;"><label>Email</label><input id="ec-bk-email" value="${escHTML(b.email || '')}"></div>
+                <div class="field" style="flex: 1;"><label>Phone</label><input id="ec-bk-phone" value="${escHTML(b.phone || '')}"></div>
+              </div>
+            </div>
+            <div class="form-section">
+              <h4>Notes</h4>
+              <div class="field"><textarea id="ec-notes" rows="3" style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px;">${escHTML(c.notes || '')}</textarea></div>
+            </div>
+            <div class="row" style="justify-content: flex-end; margin-top: 16px;">
+              <button type="button" onclick="closeModal()">Cancel</button>
+              <button type="submit" class="primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderModal() {
   if (state.modal === 'add-company') return renderAddCompanyModal();
+  if (state.modal === 'edit-company') return renderEditCompanyModal();
   if (state.modal === 'report') return renderReportModal();
   return '';
 }
