@@ -186,6 +186,92 @@ const LIBRARY = {
 const COUNTRY_TO_KEY = { 'Australia': 'AU', 'New Zealand': 'NZ', 'United States': 'US' };
 const COUNTRIES = ['Australia', 'New Zealand', 'United States'];
 
+// Real client portfolio — loaded by runMigrations() once (real_portfolio_2026_05_v1).
+// 5 entities, 25 requirements, 36 tasks (8 flagged PENDING CHECK).
+const REAL_PORTFOLIO = {
+  companies: [
+    { id: "co-dbau-001", name: "DISPUTE BUDDY AUSTRALIA PTY LTD", domicile: "Australia", industry: "SaaS", taxYearEnd: "06-30", active: true },
+    { id: "co-dbnz-001", name: "DISPUTE BUDDY LIMITED (NZ — dormant)", domicile: "New Zealand", industry: "SaaS subsidiary — dormant", taxYearEnd: "03-31", active: true },
+    { id: "co-ftbc-001", name: "Founded To Be Counted", domicile: "New Zealand", industry: "Financial confidence platform", taxYearEnd: "03-31", active: true },
+    { id: "co-ahayau-001", name: "AHAY Society Pty Ltd (Clutch Australia)", domicile: "Australia", industry: "Consumer Products", taxYearEnd: "06-30", active: true },
+    { id: "co-ahayus-001", name: "AHAY Society Corp (Clutch US — Delaware C-Corp)", domicile: "United States", industry: "Consumer Products", taxYearEnd: "12-31", active: true }
+  ],
+  requirements: [
+    { id: "req-dbau-asic", companyId: "co-dbau-001", name: "ASIC annual review & fee", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Anniversary of registration (25 Jul)", notes: "ABN 85 679 055 639. Active from 25 Jul 2024. Standard Pty Ltd fee ~$329." },
+    { id: "req-dbau-solv", companyId: "co-dbau-001", name: "Solvency resolution", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Within 2 months of ASIC review", notes: "Directors confirm company can pay debts." },
+    { id: "req-dbau-itr", companyId: "co-dbau-001", name: "Company income tax return", category: "Tax", regulator: "ATO", frequency: "Annual", timing: "15 May (tax-agent-lodged) for 30 Jun YE", notes: "Corporate tax rate 25% (base rate entity)." },
+    { id: "req-dbau-bas", companyId: "co-dbau-001", name: "Business Activity Statement (BAS)", category: "Tax", regulator: "ATO", frequency: "Quarterly", timing: "28 Apr / 28 Jul / 28 Oct / 28 Feb", notes: "GST registered. Includes PAYG instalments." },
+    { id: "req-dbau-bo", companyId: "co-dbau-001", name: "Beneficial ownership register", category: "Corporate", regulator: "Internal (Treasury reforms)", frequency: "Ongoing", timing: "On changes", notes: "Maintain internally." },
+
+    { id: "req-dbnz-ar", companyId: "co-dbnz-001", name: "Companies Office annual return", category: "Corporate", regulator: "Companies Office", frequency: "Annual", timing: "Allocated month — assumed Sep (incorporation 22 Sep 2022)", notes: "NZBN 9429050853922. Owned by Dispute Buddy Australia Pty Ltd. Dormant ≠ exempt — late fees apply." },
+    { id: "req-dbnz-ir4", companyId: "co-dbnz-001", name: "IR4 company income tax return (NIL)", category: "Tax", regulator: "IRD", frequency: "Annual", timing: "7 July following 31 March YE (with tax agent up to 31 Mar)", notes: "Dormant company — file NIL return annually." },
+
+    { id: "req-ftbc-ar", companyId: "co-ftbc-001", name: "Companies Office annual return", category: "Corporate", regulator: "Companies Office", frequency: "Annual", timing: "Allocated month: September (default — please verify on Companies Office register)", notes: "Confirm exact filing month at companiesoffice.govt.nz" },
+    { id: "req-ftbc-ir4", companyId: "co-ftbc-001", name: "IR4 company income tax return", category: "Tax", regulator: "IRD", frequency: "Annual", timing: "7 July (or up to 31 March via tax agent)", notes: "Corporate tax rate 28%. Year end 31 March." },
+    { id: "req-ftbc-prov", companyId: "co-ftbc-001", name: "Provisional tax", category: "Tax", regulator: "IRD", frequency: "Three instalments", timing: "28 Aug / 15 Jan / 7 May", notes: "Likely liable from FY27 onward (after 31 Mar 2026 RIT)." },
+    { id: "req-ftbc-gst", companyId: "co-ftbc-001", name: "GST returns (6-monthly)", category: "Tax", regulator: "IRD", frequency: "6-monthly", timing: "28th of month after period (28 Jul / 28 Jan)", notes: "GST registered. Standard rate 15%." },
+    { id: "req-ftbc-paye", companyId: "co-ftbc-001", name: "PAYE / payday filing", category: "Payroll Tax", regulator: "IRD", frequency: "Per pay run", timing: "Within 2 working days of payday", notes: "1 employee. Real-time filing." },
+    { id: "req-ftbc-ks", companyId: "co-ftbc-001", name: "KiwiSaver employer contributions", category: "Payroll Tax", regulator: "IRD", frequency: "Per pay run", timing: "With PAYE", notes: "Minimum 3% employer contribution." },
+    { id: "req-ftbc-acc", companyId: "co-ftbc-001", name: "ACC employer levies", category: "Payroll Tax", regulator: "ACC", frequency: "Annual invoice", timing: "ACC sends invoice — no proactive deadline", notes: "Work levy + Earner levy. Invoiced annually." },
+
+    { id: "req-ahayau-asic", companyId: "co-ahayau-001", name: "ASIC annual review & fee", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Anniversary of registration (10 Aug)", notes: "ABN 61 652 694 454. ACN 652 694 454. Registered 10 Aug 2021." },
+    { id: "req-ahayau-solv", companyId: "co-ahayau-001", name: "Solvency resolution", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Within 2 months of ASIC review", notes: "Directors confirm company can pay debts." },
+    { id: "req-ahayau-itr", companyId: "co-ahayau-001", name: "Company income tax return", category: "Tax", regulator: "ATO", frequency: "Annual", timing: "15 May (tax-agent-lodged) for 30 Jun YE", notes: "Corporate tax rate 25% or 30% depending on aggregated turnover." },
+    { id: "req-ahayau-bas", companyId: "co-ahayau-001", name: "Business Activity Statement (BAS)", category: "Tax", regulator: "ATO", frequency: "Quarterly", timing: "28 Apr / 28 Jul / 28 Oct / 28 Feb", notes: "GST registered. Includes PAYG instalments + PAYG-W for 4 employees." },
+    { id: "req-ahayau-stp", companyId: "co-ahayau-001", name: "Single Touch Payroll (STP)", category: "Tax", regulator: "ATO", frequency: "Per pay run", timing: "Real-time on each pay run", notes: "Reports wages, PAYG-W, and super for 4 employees." },
+    { id: "req-ahayau-super", companyId: "co-ahayau-001", name: "Superannuation Guarantee", category: "Payroll", regulator: "ATO", frequency: "Quarterly", timing: "28 days after quarter end (28 Apr / 28 Jul / 28 Oct / 28 Jan)", notes: "12% of ordinary time earnings. 4 employees." },
+    { id: "req-ahayau-paygw", companyId: "co-ahayau-001", name: "PAYG withholding", category: "Tax", regulator: "ATO", frequency: "Per pay cycle", timing: "Reported via BAS/STP", notes: "Withhold tax from employee wages." },
+    { id: "req-ahayau-bo", companyId: "co-ahayau-001", name: "Beneficial ownership register", category: "Corporate", regulator: "Internal", frequency: "Ongoing", timing: "On changes", notes: "Maintain internally." },
+
+    { id: "req-ahayus-1120", companyId: "co-ahayus-001", name: "Federal income tax return (Form 1120)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "15 April for calendar-year corps", notes: "Delaware C-Corp. EIN 35-2905636. Federal corporate rate 21%." },
+    { id: "req-ahayus-5472", companyId: "co-ahayus-001", name: "Form 5472 (foreign-owned reporting)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "Filed with Form 1120", notes: "$25k penalty for non-filing — required even with no income. AHAY US is foreign-owned (parent in AU)." },
+    { id: "req-ahayus-de", companyId: "co-ahayus-001", name: "Delaware franchise tax + annual report", category: "State Tax", regulator: "DE Division of Corporations", frequency: "Annual", timing: "1 March", notes: "File # 10232053. Authorised shares 2,000 @ $0.01 par. Use Assumed Par Value Capital method (usually lower)." }
+  ],
+  tasks: [
+    { id: "task-dbau-asic-2026", companyId: "co-dbau-001", requirementId: "req-dbau-asic", name: "ASIC annual review & fee", dueDate: "2026-07-25", priority: "Medium", completed: false, notes: "Anniversary of company registration (25 Jul 2024)." },
+    { id: "task-dbau-solv-2026", companyId: "co-dbau-001", requirementId: "req-dbau-solv", name: "Solvency resolution", dueDate: "2026-09-25", priority: "Medium", completed: false, notes: "Within 2 months of ASIC review date." },
+    { id: "task-dbau-itr-fy25", companyId: "co-dbau-001", requirementId: "req-dbau-itr", name: "Company income tax return (FY25 — first return)", dueDate: "2026-05-15", priority: "High", completed: false, notes: "PENDING CHECK: First income tax return covering 25 Jul 2024 – 30 Jun 2025. Due 15 May 2026. Confirm with tax agent if lodged." },
+    { id: "task-dbau-itr-fy26", companyId: "co-dbau-001", requirementId: "req-dbau-itr", name: "Company income tax return (FY26)", dueDate: "2027-05-15", priority: "Medium", completed: false, notes: "Year ending 30 Jun 2026, lodged via tax agent." },
+    { id: "task-dbau-bas-q3-2026", companyId: "co-dbau-001", requirementId: "req-dbau-bas", name: "BAS Q3 (Jan-Mar 2026)", dueDate: "2026-04-28", priority: "High", completed: false, notes: "PENDING CHECK: Was due 28 Apr 2026. Confirm with bookkeeper if lodged." },
+    { id: "task-dbau-bas-q4-2026", companyId: "co-dbau-001", requirementId: "req-dbau-bas", name: "BAS Q4 (Apr-Jun 2026)", dueDate: "2026-07-28", priority: "Medium", completed: false, notes: "Standard quarterly cadence." },
+    { id: "task-dbau-bo", companyId: "co-dbau-001", requirementId: "req-dbau-bo", name: "Update beneficial ownership register on changes", dueDate: "2026-12-31", priority: "Low", completed: false, notes: "Ongoing — review annually." },
+
+    { id: "task-dbnz-ar-2026", companyId: "co-dbnz-001", requirementId: "req-dbnz-ar", name: "Companies Office annual return", dueDate: "2026-09-30", priority: "Medium", completed: false, notes: "Default: September month. Verify exact filing month on Companies Office register." },
+    { id: "task-dbnz-ir4-fy26", companyId: "co-dbnz-001", requirementId: "req-dbnz-ir4", name: "IR4 NIL return (FY26)", dueDate: "2026-07-07", priority: "Medium", completed: false, notes: "Dormant company — NIL return required for year ending 31 Mar 2026." },
+
+    { id: "task-ftbc-ar-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-ar", name: "Companies Office annual return", dueDate: "2026-09-30", priority: "Medium", completed: false, notes: "Default: September. Verify exact month on Companies Office register." },
+    { id: "task-ftbc-ir4-fy26", companyId: "co-ftbc-001", requirementId: "req-ftbc-ir4", name: "IR4 income tax return (FY26)", dueDate: "2026-07-07", priority: "High", completed: false, notes: "Year ending 31 Mar 2026. Due 7 Jul 2026 (or 31 Mar 2027 with tax agent)." },
+    { id: "task-ftbc-prov-fy27-p1", companyId: "co-ftbc-001", requirementId: "req-ftbc-prov", name: "Provisional tax FY27 — instalment 1", dueDate: "2026-08-28", priority: "Medium", completed: false, notes: "Triggered if FY26 RIT > $5k. Confirm with tax agent after FY26 return is filed." },
+    { id: "task-ftbc-prov-fy27-p2", companyId: "co-ftbc-001", requirementId: "req-ftbc-prov", name: "Provisional tax FY27 — instalment 2", dueDate: "2027-01-15", priority: "Medium", completed: false, notes: "Standard balance date 31 Mar." },
+    { id: "task-ftbc-prov-fy27-p3", companyId: "co-ftbc-001", requirementId: "req-ftbc-prov", name: "Provisional tax FY27 — instalment 3", dueDate: "2027-05-07", priority: "Medium", completed: false, notes: "Standard balance date 31 Mar." },
+    { id: "task-ftbc-gst-h1-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-gst", name: "GST return (1 Jan – 30 Jun 2026)", dueDate: "2026-07-28", priority: "High", completed: false, notes: "6-monthly cycle. Period: 1 Jan – 30 Jun 2026." },
+    { id: "task-ftbc-gst-h2-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-gst", name: "GST return (1 Jul – 31 Dec 2026)", dueDate: "2027-01-28", priority: "Medium", completed: false, notes: "6-monthly cycle. Period: 1 Jul – 31 Dec 2026." },
+    { id: "task-ftbc-paye", companyId: "co-ftbc-001", requirementId: "req-ftbc-paye", name: "PAYE / payday filing — ongoing", dueDate: "2026-05-31", priority: "Medium", completed: false, notes: "Ongoing — file within 2 working days of each payday. Reset due date each month." },
+    { id: "task-ftbc-ks", companyId: "co-ftbc-001", requirementId: "req-ftbc-ks", name: "KiwiSaver employer contributions — ongoing", dueDate: "2026-05-31", priority: "Medium", completed: false, notes: "Paid with PAYE. Minimum 3% employer contribution." },
+    { id: "task-ftbc-acc-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-acc", name: "ACC employer levy invoice", dueDate: "2026-09-01", priority: "Low", completed: false, notes: "ACC issues invoice annually — no proactive deadline. Update task once invoice arrives." },
+
+    { id: "task-ahayau-asic-2026", companyId: "co-ahayau-001", requirementId: "req-ahayau-asic", name: "ASIC annual review & fee", dueDate: "2026-08-10", priority: "Medium", completed: false, notes: "Anniversary of company registration (10 Aug 2021)." },
+    { id: "task-ahayau-solv-2026", companyId: "co-ahayau-001", requirementId: "req-ahayau-solv", name: "Solvency resolution", dueDate: "2026-10-10", priority: "Medium", completed: false, notes: "Within 2 months of ASIC review date." },
+    { id: "task-ahayau-itr-fy25", companyId: "co-ahayau-001", requirementId: "req-ahayau-itr", name: "Company income tax return (FY25)", dueDate: "2026-05-15", priority: "High", completed: false, notes: "PENDING CHECK: Year ending 30 Jun 2025. Due 15 May 2026. Confirm with tax agent." },
+    { id: "task-ahayau-itr-fy26", companyId: "co-ahayau-001", requirementId: "req-ahayau-itr", name: "Company income tax return (FY26)", dueDate: "2027-05-15", priority: "Medium", completed: false, notes: "Year ending 30 Jun 2026, lodged via tax agent." },
+    { id: "task-ahayau-bas-q2-2025", companyId: "co-ahayau-001", requirementId: "req-ahayau-bas", name: "BAS Q2 (Oct-Dec 2025)", dueDate: "2026-02-28", priority: "Medium", completed: true, notes: "Lodged. ATO refunded GST on 9 Mar 2026 — confirms lodgement." },
+    { id: "task-ahayau-bas-q3-2026", companyId: "co-ahayau-001", requirementId: "req-ahayau-bas", name: "BAS Q3 (Jan-Mar 2026)", dueDate: "2026-04-28", priority: "High", completed: false, notes: "PENDING CHECK: Was due 28 Apr 2026. Confirm with bookkeeper if lodged." },
+    { id: "task-ahayau-bas-q4-2026", companyId: "co-ahayau-001", requirementId: "req-ahayau-bas", name: "BAS Q4 (Apr-Jun 2026)", dueDate: "2026-07-28", priority: "Medium", completed: false, notes: "Standard quarterly cadence." },
+    { id: "task-ahayau-stp", companyId: "co-ahayau-001", requirementId: "req-ahayau-stp", name: "STP — ongoing per pay run", dueDate: "2026-05-31", priority: "Medium", completed: false, notes: "4 employees — STP files in real-time on each pay run." },
+    { id: "task-ahayau-super-q3-2026", companyId: "co-ahayau-001", requirementId: "req-ahayau-super", name: "Super Guarantee Q3 (Jan-Mar 2026)", dueDate: "2026-04-28", priority: "High", completed: false, notes: "PENDING CHECK: Was due 28 Apr 2026. Confirm with bookkeeper. Late super loses tax-deductibility." },
+    { id: "task-ahayau-super-q4-2026", companyId: "co-ahayau-001", requirementId: "req-ahayau-super", name: "Super Guarantee Q4 (Apr-Jun 2026)", dueDate: "2026-07-28", priority: "Medium", completed: false, notes: "12% of OTE for 4 employees." },
+    { id: "task-ahayau-paygw", companyId: "co-ahayau-001", requirementId: "req-ahayau-paygw", name: "PAYG withholding — ongoing", dueDate: "2026-05-31", priority: "Medium", completed: false, notes: "Reported via BAS quarterly + STP per pay run." },
+    { id: "task-ahayau-bo", companyId: "co-ahayau-001", requirementId: "req-ahayau-bo", name: "Update beneficial ownership register on changes", dueDate: "2026-12-31", priority: "Low", completed: false, notes: "Ongoing — review annually." },
+
+    { id: "task-ahayus-1120-2025", companyId: "co-ahayus-001", requirementId: "req-ahayus-1120", name: "Form 1120 — 2025 stub year", dueDate: "2026-04-15", priority: "High", completed: false, notes: "PENDING CHECK: First federal return covering 18 Jun – 31 Dec 2025. Was due 15 Apr 2026. Confirm with US CPA. Late penalty 5%/month, capped at 25%." },
+    { id: "task-ahayus-1120-2026", companyId: "co-ahayus-001", requirementId: "req-ahayus-1120", name: "Form 1120 — FY26", dueDate: "2027-04-15", priority: "Medium", completed: false, notes: "Calendar year end 31 Dec 2026." },
+    { id: "task-ahayus-5472-2025", companyId: "co-ahayus-001", requirementId: "req-ahayus-5472", name: "Form 5472 — 2025 stub year (foreign-owned)", dueDate: "2026-04-15", priority: "High", completed: false, notes: "PENDING CHECK: Filed with 1120. $25k penalty for non-filing — required even with no income because parent is foreign-owned." },
+    { id: "task-ahayus-5472-2026", companyId: "co-ahayus-001", requirementId: "req-ahayus-5472", name: "Form 5472 — FY26", dueDate: "2027-04-15", priority: "Medium", completed: false, notes: "Filed with 1120." },
+    { id: "task-ahayus-de-2025", companyId: "co-ahayus-001", requirementId: "req-ahayus-de", name: "Delaware franchise tax + annual report — 2025", dueDate: "2026-03-01", priority: "High", completed: false, notes: "PENDING CHECK: Was due 1 Mar 2026. Flat $200 late penalty + 1.5%/mo interest. DE will void entity after 2 years unfiled." },
+    { id: "task-ahayus-de-2026", companyId: "co-ahayus-001", requirementId: "req-ahayus-de", name: "Delaware franchise tax + annual report — 2026", dueDate: "2027-03-01", priority: "Medium", completed: false, notes: "Use Assumed Par Value Capital method (usually lower for low-revenue startups)." }
+  ]
+};
+
 const SEED_COMPANIES = [
   { name: 'DISPUTE BUDDY AUSTRALIA PTY LTD', domicile: 'Australia', industry: 'SaaS', taxYearEnd: '06-30' },
   { name: 'DISPUTE BUDDY LIMITED', domicile: 'New Zealand', industry: 'SaaS', taxYearEnd: '03-31' },
@@ -306,6 +392,19 @@ function runMigrations() {
       persistAll();
     }
     done.push('add_ftbc_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: replace defaults with real client portfolio (May 2026)
+  // 5 entities with real ABNs/EIN/dates, irrelevant obligations stripped per entity,
+  // 8 PENDING CHECK tasks flagged for time-sensitive items needing bookkeeper/agent confirmation.
+  if (!done.includes('real_portfolio_2026_05_v1')) {
+    state.companies = REAL_PORTFOLIO.companies.map(c => ({ ...c }));
+    state.requirements = REAL_PORTFOLIO.requirements.map(r => ({ ...r }));
+    state.tasks = REAL_PORTFOLIO.tasks.map(t => ({ ...t }));
+    state.deletedReqs = {};
+    persistAll();
+    done.push('real_portfolio_2026_05_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 }
