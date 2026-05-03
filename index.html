@@ -226,8 +226,8 @@ const COUNTRIES = ['Australia', 'New Zealand', 'United States'];
 // 5 entities, 25 requirements, 36 tasks (8 flagged PENDING CHECK).
 const REAL_PORTFOLIO = {
   companies: [
-    { id: "co-dbau-001", name: "DISPUTE BUDDY AUSTRALIA PTY LTD", domicile: "Australia", industry: "SaaS", taxYearEnd: "06-30", active: true, registrationNumber: "ABN 85 679 055 639", registrationDate: "2024-07-25", advisor: {}, bookkeeper: {}, notes: "" },
-    { id: "co-dbnz-001", name: "DISPUTE BUDDY LIMITED (NZ — dormant)", domicile: "New Zealand", industry: "SaaS subsidiary — dormant", taxYearEnd: "03-31", active: true, registrationNumber: "NZBN 9429050853922", registrationDate: "2022-09-22", advisor: {}, bookkeeper: {}, notes: "Owned by Dispute Buddy Australia Pty Ltd. Dormant entity." },
+    { id: "co-dbau-001", name: "DISPUTE BUDDY AUSTRALIA PTY LTD", domicile: "Australia", industry: "SaaS", taxYearEnd: "06-30", active: true, registrationNumber: "ABN 85 679 055 639", registrationDate: "2024-07-25", advisor: { name: "Kylie Carter", firm: "Standard Ledger", email: "kylie@standardledger.co", phone: "" }, bookkeeper: {}, notes: "" },
+    { id: "co-dbnz-001", name: "DISPUTE BUDDY LIMITED (NZ — dormant)", domicile: "New Zealand", industry: "SaaS subsidiary — dormant", taxYearEnd: "03-31", active: true, registrationNumber: "NZBN 9429050853922", registrationDate: "2022-09-22", advisor: { name: "Stuart Ruddell", firm: "JBM", email: "stuart@jbm.net.nz", phone: "" }, bookkeeper: {}, notes: "Owned by Dispute Buddy Australia Pty Ltd. Dormant entity." },
     { id: "co-ftbc-001", name: "Founded To Be Counted", domicile: "New Zealand", industry: "Financial confidence platform", taxYearEnd: "03-31", active: true, registrationNumber: "", registrationDate: "", advisor: {}, bookkeeper: {}, notes: "" },
     { id: "co-ahayau-001", name: "AHAY Society Pty Ltd (Clutch Australia)", domicile: "Australia", industry: "Consumer Products", taxYearEnd: "06-30", active: true, registrationNumber: "ABN 61 652 694 454 · ACN 652 694 454", registrationDate: "2021-08-10", advisor: {}, bookkeeper: {}, notes: "" },
     { id: "co-ahayus-001", name: "AHAY Society Corp (Clutch US — Delaware C-Corp)", domicile: "United States", industry: "Consumer Products", taxYearEnd: "12-31", active: true, registrationNumber: "EIN 35-2905636 · DE File 10232053", registrationDate: "2025-06-18", advisor: {}, bookkeeper: {}, notes: "Registered Agent: Corporate Creations Network Inc., 1521 Concord Pike Suite 201, Wilmington DE 19803, ph 866-761-1444." }
@@ -537,6 +537,27 @@ function runMigrations() {
     }
     persistAll();
     done.push('dbnz_corp_tax_spfr_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: add tax advisor details to Dispute Buddy AU and NZ.
+  if (!done.includes('db_advisors_v1')) {
+    const dbau = state.companies.find(x => x.id === 'co-dbau-001');
+    if (dbau) {
+      const a = dbau.advisor || {};
+      if (!a.name && !a.firm && !a.email) {
+        dbau.advisor = { name: 'Kylie Carter', firm: 'Standard Ledger', email: 'kylie@standardledger.co', phone: '' };
+      }
+    }
+    const dbnz = state.companies.find(x => x.id === 'co-dbnz-001');
+    if (dbnz) {
+      const a = dbnz.advisor || {};
+      if (!a.name && !a.firm && !a.email) {
+        dbnz.advisor = { name: 'Stuart Ruddell', firm: 'JBM', email: 'stuart@jbm.net.nz', phone: '' };
+      }
+    }
+    persist('companies');
+    done.push('db_advisors_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 
