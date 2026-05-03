@@ -240,7 +240,8 @@ const REAL_PORTFOLIO = {
     { id: "req-dbau-bo", companyId: "co-dbau-001", name: "Beneficial ownership register", category: "Corporate", regulator: "Internal (Treasury reforms)", frequency: "Ongoing", timing: "On changes", notes: "Maintain internally." },
 
     { id: "req-dbnz-ar", companyId: "co-dbnz-001", name: "Companies Office annual return", category: "Corporate", regulator: "Companies Office", frequency: "Annual", timing: "Allocated month — assumed Sep (incorporation 22 Sep 2022)", notes: "NZBN 9429050853922. Owned by Dispute Buddy Australia Pty Ltd. Dormant ≠ exempt — late fees apply." },
-    { id: "req-dbnz-ir4", companyId: "co-dbnz-001", name: "IR4 company income tax return (NIL)", category: "Tax", regulator: "IRD", frequency: "Annual", timing: "7 July following 31 March YE (with tax agent up to 31 Mar)", notes: "Dormant company — file NIL return annually." },
+    { id: "req-dbnz-ir4", companyId: "co-dbnz-001", name: "Corporation tax", category: "Tax", regulator: "IRD", frequency: "Annual", timing: "7 July following 31 March YE (with tax agent up to 31 Mar)", notes: "NZ company income tax (IR4). Corporate tax rate 28%." },
+    { id: "req-dbnz-spfr", companyId: "co-dbnz-001", name: "Special Purpose Financial Reports (SPFR)", category: "Financial Reporting", regulator: "IRD", frequency: "Annual", timing: "Filed with IR4 (up to 31 Mar following YE with tax agent extension)", notes: "Minimum content set by IRD; not full GAAP." },
 
     { id: "req-ftbc-ar", companyId: "co-ftbc-001", name: "Companies Office annual return", category: "Corporate", regulator: "Companies Office", frequency: "Annual", timing: "Allocated month: September (default — please verify on Companies Office register)", notes: "Confirm exact filing month at companiesoffice.govt.nz" },
     { id: "req-ftbc-ir4", companyId: "co-ftbc-001", name: "IR4 company income tax return", category: "Tax", regulator: "IRD", frequency: "Annual", timing: "7 July (or up to 31 March via tax agent)", notes: "Corporate tax rate 28%. Year end 31 March." },
@@ -273,7 +274,10 @@ const REAL_PORTFOLIO = {
     { id: "task-dbau-bo", companyId: "co-dbau-001", requirementId: "req-dbau-bo", name: "Update beneficial ownership register on changes", dueDate: "2026-12-31", priority: "Low", completed: false, notes: "Ongoing — review annually." },
 
     { id: "task-dbnz-ar-2026", companyId: "co-dbnz-001", requirementId: "req-dbnz-ar", name: "Companies Office annual return", dueDate: "2026-09-30", priority: "Medium", completed: false, notes: "Default: September month. Verify exact filing month on Companies Office register." },
-    { id: "task-dbnz-ir4-fy26", companyId: "co-dbnz-001", requirementId: "req-dbnz-ir4", name: "IR4 NIL return (FY26)", dueDate: "2026-07-07", priority: "Medium", completed: false, notes: "Dormant company — NIL return required for year ending 31 Mar 2026." },
+    { id: "task-dbnz-itr-fy25", companyId: "co-dbnz-001", requirementId: "req-dbnz-ir4", name: "Corporation tax (FY25)", dueDate: "2026-03-31", priority: "Medium", completed: true, notes: "Year ending 31 Mar 2025. Filed via tax agent." },
+    { id: "task-dbnz-ir4-fy26", companyId: "co-dbnz-001", requirementId: "req-dbnz-ir4", name: "Corporation tax (FY26)", dueDate: "2026-07-07", priority: "Medium", completed: false, notes: "Year ending 31 Mar 2026. With tax agent extension can be filed up to 31 Mar 2027." },
+    { id: "task-dbnz-spfr-fy25", companyId: "co-dbnz-001", requirementId: "req-dbnz-spfr", name: "Special Purpose Financial Reports (FY25)", dueDate: "2026-03-31", priority: "Medium", completed: true, notes: "Year ending 31 Mar 2025. Filed with FY25 IR4." },
+    { id: "task-dbnz-spfr-fy26", companyId: "co-dbnz-001", requirementId: "req-dbnz-spfr", name: "Special Purpose Financial Reports (FY26)", dueDate: "2027-03-31", priority: "Medium", completed: false, notes: "Year ending 31 Mar 2026. Filed with FY26 IR4 — agent extension date 31 Mar 2027." },
 
     { id: "task-ftbc-ar-2026", companyId: "co-ftbc-001", requirementId: "req-ftbc-ar", name: "Companies Office annual return", dueDate: "2026-09-30", priority: "Medium", completed: false, notes: "Default: September. Verify exact month on Companies Office register." },
     { id: "task-ftbc-ir4-fy26", companyId: "co-ftbc-001", requirementId: "req-ftbc-ir4", name: "IR4 income tax return (FY26)", dueDate: "2026-07-07", priority: "High", completed: false, notes: "Year ending 31 Mar 2026. Due 7 Jul 2026 (or 31 Mar 2027 with tax agent)." },
@@ -503,6 +507,36 @@ function runMigrations() {
     state.tasks.push(...REAL_PORTFOLIO.tasks.filter(t => t.companyId === 'co-dbau-001' && t.requirementId === 'req-dbau-bas').map(t => ({ ...t })));
     persist('tasks');
     done.push('reset_dbau_bas_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: DB NZ rename IR4 → Corporation tax, add SPFR requirement,
+  // mark FY25 corp tax + FY25 SPFR filed, add FY26 SPFR due 31 Mar 2027.
+  if (!done.includes('dbnz_corp_tax_spfr_v1')) {
+    const ir4 = state.requirements.find(r => r.id === 'req-dbnz-ir4');
+    if (ir4) {
+      ir4.name = 'Corporation tax';
+      ir4.notes = 'NZ company income tax (IR4). Corporate tax rate 28%.';
+    }
+    if (!state.requirements.some(r => r.id === 'req-dbnz-spfr')) {
+      state.requirements.push({ id: 'req-dbnz-spfr', companyId: 'co-dbnz-001', name: 'Special Purpose Financial Reports (SPFR)', category: 'Financial Reporting', regulator: 'IRD', frequency: 'Annual', timing: 'Filed with IR4 (up to 31 Mar following YE with tax agent extension)', notes: 'Minimum content set by IRD; not full GAAP.' });
+    }
+    const ir4Task = state.tasks.find(t => t.id === 'task-dbnz-ir4-fy26');
+    if (ir4Task) {
+      ir4Task.name = 'Corporation tax (FY26)';
+      ir4Task.notes = 'Year ending 31 Mar 2026. With tax agent extension can be filed up to 31 Mar 2027.';
+    }
+    if (!state.tasks.some(t => t.id === 'task-dbnz-itr-fy25')) {
+      state.tasks.push({ id: 'task-dbnz-itr-fy25', companyId: 'co-dbnz-001', requirementId: 'req-dbnz-ir4', name: 'Corporation tax (FY25)', dueDate: '2026-03-31', priority: 'Medium', completed: true, notes: 'Year ending 31 Mar 2025. Filed via tax agent.' });
+    }
+    if (!state.tasks.some(t => t.id === 'task-dbnz-spfr-fy25')) {
+      state.tasks.push({ id: 'task-dbnz-spfr-fy25', companyId: 'co-dbnz-001', requirementId: 'req-dbnz-spfr', name: 'Special Purpose Financial Reports (FY25)', dueDate: '2026-03-31', priority: 'Medium', completed: true, notes: 'Year ending 31 Mar 2025. Filed with FY25 IR4.' });
+    }
+    if (!state.tasks.some(t => t.id === 'task-dbnz-spfr-fy26')) {
+      state.tasks.push({ id: 'task-dbnz-spfr-fy26', companyId: 'co-dbnz-001', requirementId: 'req-dbnz-spfr', name: 'Special Purpose Financial Reports (FY26)', dueDate: '2027-03-31', priority: 'Medium', completed: false, notes: 'Year ending 31 Mar 2026. Filed with FY26 IR4 — agent extension date 31 Mar 2027.' });
+    }
+    persistAll();
+    done.push('dbnz_corp_tax_spfr_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 
