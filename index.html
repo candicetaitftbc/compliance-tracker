@@ -275,7 +275,7 @@ const REAL_PORTFOLIO = {
 
     { id: "task-dbnz-ar-2026", companyId: "co-dbnz-001", requirementId: "req-dbnz-ar", name: "Companies Office annual return", dueDate: "2026-09-30", priority: "Medium", completed: false, notes: "Default: September month. Verify exact filing month on Companies Office register." },
     { id: "task-dbnz-itr-fy25", companyId: "co-dbnz-001", requirementId: "req-dbnz-ir4", name: "Corporation tax (FY25)", dueDate: "2026-03-31", priority: "Medium", completed: true, notes: "Year ending 31 Mar 2025. Filed via tax agent." },
-    { id: "task-dbnz-ir4-fy26", companyId: "co-dbnz-001", requirementId: "req-dbnz-ir4", name: "Corporation tax (FY26)", dueDate: "2026-07-07", priority: "Medium", completed: false, notes: "Year ending 31 Mar 2026. With tax agent extension can be filed up to 31 Mar 2027." },
+    { id: "task-dbnz-ir4-fy26", companyId: "co-dbnz-001", requirementId: "req-dbnz-ir4", name: "Corporation tax (FY26)", dueDate: "2027-03-31", priority: "Medium", completed: false, notes: "Year ending 31 Mar 2026. Filed via tax agent — agent extension date 31 Mar 2027." },
     { id: "task-dbnz-spfr-fy25", companyId: "co-dbnz-001", requirementId: "req-dbnz-spfr", name: "Special Purpose Financial Reports (FY25)", dueDate: "2026-03-31", priority: "Medium", completed: true, notes: "Year ending 31 Mar 2025. Filed with FY25 IR4." },
     { id: "task-dbnz-spfr-fy26", companyId: "co-dbnz-001", requirementId: "req-dbnz-spfr", name: "Special Purpose Financial Reports (FY26)", dueDate: "2027-03-31", priority: "Medium", completed: false, notes: "Year ending 31 Mar 2026. Filed with FY26 IR4 — agent extension date 31 Mar 2027." },
 
@@ -537,6 +537,19 @@ function runMigrations() {
     }
     persistAll();
     done.push('dbnz_corp_tax_spfr_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: push DB NZ FY26 Corporation tax from 7 Jul 2026 to 31 Mar 2027
+  // to reflect the tax agent extension date.
+  if (!done.includes('dbnz_ir4_fy26_agent_extension_v1')) {
+    const t = state.tasks.find(t => t.id === 'task-dbnz-ir4-fy26');
+    if (t && !t.completed) {
+      t.dueDate = '2027-03-31';
+      t.notes = 'Year ending 31 Mar 2026. Filed via tax agent — agent extension date 31 Mar 2027.';
+    }
+    persist('tasks');
+    done.push('dbnz_ir4_fy26_agent_extension_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 
