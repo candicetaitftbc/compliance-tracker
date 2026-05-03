@@ -236,7 +236,7 @@ const REAL_PORTFOLIO = {
     { id: "req-dbau-asic", companyId: "co-dbau-001", name: "ASIC annual review & fee", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Anniversary of registration (25 Jul)", notes: "ABN 85 679 055 639. Active from 25 Jul 2024. Standard Pty Ltd fee ~$329." },
     { id: "req-dbau-solv", companyId: "co-dbau-001", name: "Solvency resolution", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Within 2 months of ASIC review", notes: "Directors confirm company can pay debts." },
     { id: "req-dbau-itr", companyId: "co-dbau-001", name: "Company income tax return", category: "Tax", regulator: "ATO", frequency: "Annual", timing: "15 May (tax-agent-lodged) for 30 Jun YE", notes: "Corporate tax rate 25% (base rate entity)." },
-    { id: "req-dbau-bas", companyId: "co-dbau-001", name: "Business Activity Statement (BAS)", category: "Tax", regulator: "ATO", frequency: "Quarterly", timing: "28 Apr / 28 Jul / 28 Oct / 28 Feb", notes: "GST registered. Includes PAYG instalments." },
+    { id: "req-dbau-bas", companyId: "co-dbau-001", name: "Business Activity Statement (BAS)", category: "Tax", regulator: "ATO", frequency: "Quarterly", timing: "26 May / 25 Aug / 25 Nov / 28 Feb (lodged via tax/BAS agent — 4-week concession on Q1/Q3/Q4)", notes: "GST registered. Includes PAYG instalments. Lodged via registered tax/BAS agent — automatic 4-week extension on quarterly BAS (except Q2 which already has Christmas extension)." },
     { id: "req-dbau-bo", companyId: "co-dbau-001", name: "Beneficial ownership register", category: "Corporate", regulator: "Internal (Treasury reforms)", frequency: "Ongoing", timing: "On changes", notes: "Maintain internally." },
 
     { id: "req-dbnz-ar", companyId: "co-dbnz-001", name: "Companies Office annual return", category: "Corporate", regulator: "Companies Office", frequency: "Annual", timing: "Allocated month — assumed Sep (incorporation 22 Sep 2022)", notes: "NZBN 9429050853922. Owned by Dispute Buddy Australia Pty Ltd. Dormant ≠ exempt — late fees apply." },
@@ -268,8 +268,8 @@ const REAL_PORTFOLIO = {
     { id: "task-dbau-solv-2026", companyId: "co-dbau-001", requirementId: "req-dbau-solv", name: "Solvency resolution", dueDate: "2026-09-25", priority: "Medium", completed: false, notes: "Within 2 months of ASIC review date." },
     { id: "task-dbau-itr-fy25", companyId: "co-dbau-001", requirementId: "req-dbau-itr", name: "Company income tax return (FY25 — first return)", dueDate: "2026-05-15", priority: "High", completed: false, notes: "PENDING CHECK: First income tax return covering 25 Jul 2024 – 30 Jun 2025. Due 15 May 2026. Confirm with tax agent if lodged." },
     { id: "task-dbau-itr-fy26", companyId: "co-dbau-001", requirementId: "req-dbau-itr", name: "Company income tax return (FY26)", dueDate: "2027-05-15", priority: "Medium", completed: false, notes: "Year ending 30 Jun 2026, lodged via tax agent." },
-    { id: "task-dbau-bas-q3-2026", companyId: "co-dbau-001", requirementId: "req-dbau-bas", name: "BAS Q3 (Jan-Mar 2026)", dueDate: "2026-04-28", priority: "High", completed: false, notes: "PENDING CHECK: Was due 28 Apr 2026. Confirm with bookkeeper if lodged." },
-    { id: "task-dbau-bas-q4-2026", companyId: "co-dbau-001", requirementId: "req-dbau-bas", name: "BAS Q4 (Apr-Jun 2026)", dueDate: "2026-07-28", priority: "Medium", completed: false, notes: "Standard quarterly cadence." },
+    { id: "task-dbau-bas-q3-2026", companyId: "co-dbau-001", requirementId: "req-dbau-bas", name: "BAS Q3 (Jan-Mar 2026)", dueDate: "2026-05-26", priority: "High", completed: false, notes: "Lodged via tax/BAS agent — agent concession extends due date 4 weeks beyond standard 28 Apr." },
+    { id: "task-dbau-bas-q4-2026", companyId: "co-dbau-001", requirementId: "req-dbau-bas", name: "BAS Q4 (Apr-Jun 2026)", dueDate: "2026-08-25", priority: "Medium", completed: false, notes: "Lodged via tax/BAS agent — agent concession extends due date 4 weeks beyond standard 28 Jul." },
     { id: "task-dbau-bo", companyId: "co-dbau-001", requirementId: "req-dbau-bo", name: "Update beneficial ownership register on changes", dueDate: "2026-12-31", priority: "Low", completed: false, notes: "Ongoing — review annually." },
 
     { id: "task-dbnz-ar-2026", companyId: "co-dbnz-001", requirementId: "req-dbnz-ar", name: "Companies Office annual return", dueDate: "2026-09-30", priority: "Medium", completed: false, notes: "Default: September month. Verify exact filing month on Companies Office register." },
@@ -503,6 +503,29 @@ function runMigrations() {
     state.tasks.push(...REAL_PORTFOLIO.tasks.filter(t => t.companyId === 'co-dbau-001' && t.requirementId === 'req-dbau-bas').map(t => ({ ...t })));
     persist('tasks');
     done.push('reset_dbau_bas_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: apply tax/BAS agent 4-week concession to Dispute Buddy AU BAS dates.
+  // DB AU is lodged via a registered agent — quarterly BAS gets +28 days on Q1/Q3/Q4.
+  if (!done.includes('dbau_bas_agent_concession_v1')) {
+    const req = state.requirements.find(r => r.id === 'req-dbau-bas');
+    if (req) {
+      req.timing = '26 May / 25 Aug / 25 Nov / 28 Feb (lodged via tax/BAS agent — 4-week concession on Q1/Q3/Q4)';
+      req.notes = 'GST registered. Includes PAYG instalments. Lodged via registered tax/BAS agent — automatic 4-week extension on quarterly BAS (except Q2 which already has Christmas extension).';
+    }
+    const q3 = state.tasks.find(t => t.id === 'task-dbau-bas-q3-2026');
+    if (q3 && !q3.completed) {
+      q3.dueDate = '2026-05-26';
+      q3.notes = 'Lodged via tax/BAS agent — agent concession extends due date 4 weeks beyond standard 28 Apr.';
+    }
+    const q4 = state.tasks.find(t => t.id === 'task-dbau-bas-q4-2026');
+    if (q4 && !q4.completed) {
+      q4.dueDate = '2026-08-25';
+      q4.notes = 'Lodged via tax/BAS agent — agent concession extends due date 4 weeks beyond standard 28 Jul.';
+    }
+    persistAll();
+    done.push('dbau_bas_agent_concession_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 }
