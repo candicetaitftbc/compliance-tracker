@@ -561,6 +561,18 @@ function runMigrations() {
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 
+  // Migration: force-set DB AU and DB NZ advisor details (v1 may have skipped
+  // due to partial existing data — this overwrites unconditionally).
+  if (!done.includes('db_advisors_v2_force')) {
+    const dbau = state.companies.find(x => x.id === 'co-dbau-001');
+    if (dbau) dbau.advisor = { name: 'Kylie Carter', firm: 'Standard Ledger', email: 'kylie@standardledger.co', phone: '' };
+    const dbnz = state.companies.find(x => x.id === 'co-dbnz-001');
+    if (dbnz) dbnz.advisor = { name: 'Stuart Ruddell', firm: 'JBM', email: 'stuart@jbm.net.nz', phone: '' };
+    persist('companies');
+    done.push('db_advisors_v2_force');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
   // Migration: push DB NZ FY26 Corporation tax from 7 Jul 2026 to 31 Mar 2027
   // to reflect the tax agent extension date.
   if (!done.includes('dbnz_ir4_fy26_agent_extension_v1')) {
