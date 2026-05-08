@@ -230,7 +230,8 @@ const REAL_PORTFOLIO = {
     { id: "co-dbnz-001", name: "DISPUTE BUDDY LIMITED (NZ — dormant)", domicile: "New Zealand", industry: "SaaS subsidiary — dormant", taxYearEnd: "03-31", active: true, registrationNumber: "NZBN 9429050853922", registrationDate: "2022-09-22", advisor: { name: "Stuart Ruddell", firm: "JBM", email: "stuart@jbm.net.nz", phone: "" }, bookkeeper: {}, notes: "Owned by Dispute Buddy Australia Pty Ltd. Dormant entity." },
     { id: "co-ftbc-001", name: "Founded To Be Counted", domicile: "New Zealand", industry: "Financial confidence platform", taxYearEnd: "03-31", active: true, registrationNumber: "", registrationDate: "", advisor: {}, bookkeeper: {}, notes: "" },
     { id: "co-ahayau-001", name: "AHAY Society Pty Ltd (Clutch Australia)", domicile: "Australia", industry: "Consumer Products", taxYearEnd: "06-30", active: true, registrationNumber: "ABN 61 652 694 454 · ACN 652 694 454", registrationDate: "2021-08-10", advisor: {}, bookkeeper: {}, notes: "" },
-    { id: "co-ahayus-001", name: "AHAY Society Corp (Clutch US — Delaware C-Corp)", domicile: "United States", industry: "Consumer Products", taxYearEnd: "12-31", active: true, registrationNumber: "EIN 35-2905636 · DE File 10232053", registrationDate: "2025-06-18", advisor: {}, bookkeeper: {}, notes: "Registered Agent: Corporate Creations Network Inc., 1521 Concord Pike Suite 201, Wilmington DE 19803, ph 866-761-1444." }
+    { id: "co-ahayus-001", name: "AHAY Society Corp (Clutch US — Delaware C-Corp)", domicile: "United States", industry: "Consumer Products", taxYearEnd: "12-31", active: true, registrationNumber: "EIN 35-2905636 · DE File 10232053", registrationDate: "2025-06-18", advisor: {}, bookkeeper: {}, notes: "Registered Agent: Corporate Creations Network Inc., 1521 Concord Pike Suite 201, Wilmington DE 19803, ph 866-761-1444." },
+    { id: "co-sans-001", name: "Sans Ceuticals LLC (Delaware LLC — US Shopify sales)", domicile: "United States", industry: "Consumer Products (Beauty / Personal Care)", taxYearEnd: "12-31", active: true, registrationNumber: "EIN 38-4363373 · DE File 10261854", registrationDate: "2025-07-16", advisor: {}, bookkeeper: {}, notes: "Single-member LLC, foreign-owned (disregarded entity for US federal income tax — owner reports ECI on Form 1040-NR). Operations: Shopify store selling into US, inventory at 3PL in New York → triggers physical sales-tax nexus in NY. BOI exempt (domestic LLC under March 2025 interim rule). PENDING CHECK: confirm registered agent details and whether NY Certificate of Authority has been filed." }
   ],
   requirements: [
     { id: "req-dbau-asic", companyId: "co-dbau-001", name: "ASIC annual review & fee", category: "Corporate", regulator: "ASIC", frequency: "Annual", timing: "Anniversary of registration (25 Jul)", notes: "ABN 85 679 055 639. Active from 25 Jul 2024. Standard Pty Ltd fee ~$329." },
@@ -262,7 +263,14 @@ const REAL_PORTFOLIO = {
 
     { id: "req-ahayus-1120", companyId: "co-ahayus-001", name: "Federal income tax return (Form 1120)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "15 April for calendar-year corps", notes: "Delaware C-Corp. EIN 35-2905636. Federal corporate rate 21%. Registered Agent: Corporate Creations Network Inc., 1521 Concord Pike Suite 201, Wilmington DE 19803, ph 866-761-1444. DE File # 10232053." },
     { id: "req-ahayus-5472", companyId: "co-ahayus-001", name: "Form 5472 (foreign-owned reporting)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "Filed with Form 1120", notes: "$25k penalty for non-filing — required even with no income. AHAY US is foreign-owned (parent in AU)." },
-    { id: "req-ahayus-de", companyId: "co-ahayus-001", name: "Delaware franchise tax + annual report", category: "State Tax", regulator: "DE Division of Corporations", frequency: "Annual", timing: "1 March", notes: "File # 10232053. Authorised shares 2,000 @ $0.01 par. Use Assumed Par Value Capital method (usually lower)." }
+    { id: "req-ahayus-de", companyId: "co-ahayus-001", name: "Delaware franchise tax + annual report", category: "State Tax", regulator: "DE Division of Corporations", frequency: "Annual", timing: "1 March", notes: "File # 10232053. Authorised shares 2,000 @ $0.01 par. Use Assumed Par Value Capital method (usually lower)." },
+
+    { id: "req-sans-5472", companyId: "co-sans-001", name: "Form 5472 + pro-forma Form 1120 (foreign-owned LLC)", category: "Tax", regulator: "IRS", frequency: "Annual", timing: "15 April for calendar-year filers", notes: "$25k MINIMUM penalty for non-filing — required even with no income because Sans is foreign-owned single-member LLC. File Form 5472 attached to a pro-forma Form 1120 marked 'Foreign-owned U.S. DE'. EIN 38-4363373." },
+    { id: "req-sans-de-llc-tax", companyId: "co-sans-001", name: "Delaware LLC annual tax", category: "State Tax", regulator: "DE Division of Corporations", frequency: "Annual", timing: "1 June", notes: "Flat $300/year for DE LLCs (no annual report required for LLCs — unlike DE C-Corps). DE File 10261854. Late penalty $200 + 1.5%/mo interest. First payment due 1 Jun 2026 for calendar year 2026 (formed 16 Jul 2025)." },
+    { id: "req-sans-ra", companyId: "co-sans-001", name: "Delaware registered agent", category: "Corporate", regulator: "DE Division of Corporations", frequency: "Ongoing", timing: "Continuous", notes: "Required in state of incorporation. PENDING CHECK: confirm registered agent name and address." },
+    { id: "req-sans-ny-foreign-qual", companyId: "co-sans-001", name: "NY foreign LLC Certificate of Authority + biennial statement", category: "Corporate", regulator: "NY Department of State", frequency: "One-off + biennial", timing: "Before doing business in NY; biennial statement every 2 years", notes: "PENDING CHECK: 3PL inventory in NY likely = 'doing business' under §802 NY LLC Law → Certificate of Authority required, plus NY publication requirement (~$500–1,500 in NYC counties — publish in 2 newspapers for 6 weeks). After qualification, biennial statement due every 2 years." },
+    { id: "req-sans-ny-sales-tax", companyId: "co-sans-001", name: "NY State sales tax", category: "State Tax", regulator: "NY Dept of Taxation and Finance", frequency: "Quarterly", timing: "20th of month after quarter end (NY sales tax year 1 Mar–28 Feb)", notes: "PHYSICAL NEXUS via 3PL inventory in NY → MUST register for sales tax BEFORE first taxable sale, regardless of revenue. NYS rate 4% + local (~8.875% combined in NYC). Quarterly filers if taxable receipts ≥ $300k/qtr; otherwise annual." },
+    { id: "req-sans-multi-state-nexus", companyId: "co-sans-001", name: "Multi-state economic sales-tax nexus monitoring", category: "State Tax", regulator: "Various state revenue depts", frequency: "Ongoing", timing: "Monthly review of Shopify sales-by-state", notes: "Post-Wayfair: register in any state where sales exceed economic nexus threshold (typically $100k OR 200 transactions/yr). Track Shopify sales by state monthly. Common triggers: CA, TX, FL, IL, PA, GA, OH, WA." }
   ],
   tasks: [
     { id: "task-dbau-asic-2026", companyId: "co-dbau-001", requirementId: "req-dbau-asic", name: "ASIC annual review & fee", dueDate: "2026-07-25", priority: "Medium", completed: false, notes: "Anniversary of company registration (25 Jul 2024)." },
@@ -308,7 +316,18 @@ const REAL_PORTFOLIO = {
     { id: "task-ahayus-5472-2025", companyId: "co-ahayus-001", requirementId: "req-ahayus-5472", name: "Form 5472 — 2025 stub year (foreign-owned)", dueDate: "2026-04-15", priority: "High", completed: false, notes: "PENDING CHECK: Filed with 1120. $25k penalty for non-filing — required even with no income because parent is foreign-owned." },
     { id: "task-ahayus-5472-2026", companyId: "co-ahayus-001", requirementId: "req-ahayus-5472", name: "Form 5472 — FY26", dueDate: "2027-04-15", priority: "Medium", completed: false, notes: "Filed with 1120." },
     { id: "task-ahayus-de-2025", companyId: "co-ahayus-001", requirementId: "req-ahayus-de", name: "Delaware franchise tax + annual report — 2025", dueDate: "2026-03-01", priority: "High", completed: false, notes: "PENDING CHECK: Was due 1 Mar 2026. Flat $200 late penalty + 1.5%/mo interest. DE will void entity after 2 years unfiled." },
-    { id: "task-ahayus-de-2026", companyId: "co-ahayus-001", requirementId: "req-ahayus-de", name: "Delaware franchise tax + annual report — 2026", dueDate: "2027-03-01", priority: "Medium", completed: false, notes: "Use Assumed Par Value Capital method (usually lower for low-revenue startups)." }
+    { id: "task-ahayus-de-2026", companyId: "co-ahayus-001", requirementId: "req-ahayus-de", name: "Delaware franchise tax + annual report — 2026", dueDate: "2027-03-01", priority: "Medium", completed: false, notes: "Use Assumed Par Value Capital method (usually lower for low-revenue startups)." },
+
+    { id: "task-sans-5472-2025", companyId: "co-sans-001", requirementId: "req-sans-5472", name: "Form 5472 + pro-forma 1120 — 2025 stub year", dueDate: "2026-04-15", priority: "High", completed: false, notes: "PENDING CHECK: First filing covering 16 Jul – 31 Dec 2025. Was due 15 Apr 2026. Confirm with US CPA. $25k minimum penalty for non-filing — required even with no income." },
+    { id: "task-sans-5472-2026", companyId: "co-sans-001", requirementId: "req-sans-5472", name: "Form 5472 + pro-forma 1120 — FY26", dueDate: "2027-04-15", priority: "Medium", completed: false, notes: "Calendar year end 31 Dec 2026." },
+    { id: "task-sans-de-2026", companyId: "co-sans-001", requirementId: "req-sans-de-llc-tax", name: "Delaware LLC annual tax — 2026", dueDate: "2026-06-01", priority: "High", completed: false, notes: "PENDING CHECK: Flat $300 was due 1 Jun 2026 (first payment year). DE File 10261854. Confirm if paid; late penalty $200 + 1.5%/mo interest." },
+    { id: "task-sans-de-2027", companyId: "co-sans-001", requirementId: "req-sans-de-llc-tax", name: "Delaware LLC annual tax — 2027", dueDate: "2027-06-01", priority: "Medium", completed: false, notes: "Flat $300." },
+    { id: "task-sans-ra", companyId: "co-sans-001", requirementId: "req-sans-ra", name: "Confirm Delaware registered agent details", dueDate: "2026-05-31", priority: "Medium", completed: false, notes: "PENDING CHECK: Look up registered agent for DE File 10261854 and add to entity profile." },
+    { id: "task-sans-ny-foreign-qual", companyId: "co-sans-001", requirementId: "req-sans-ny-foreign-qual", name: "NY foreign LLC Certificate of Authority + publication", dueDate: "2026-06-30", priority: "High", completed: false, notes: "PENDING CHECK: Confirm whether 3PL inventory triggers NY 'doing business' threshold and whether Certificate of Authority + publication requirement have been completed. Likely yes based on inventory presence." },
+    { id: "task-sans-ny-sales-register", companyId: "co-sans-001", requirementId: "req-sans-ny-sales-tax", name: "Register for NY sales tax (Certificate of Authority)", dueDate: "2026-05-31", priority: "High", completed: false, notes: "PENDING CHECK: Inventory in NY 3PL = physical sales tax nexus. Register at https://my.ny.gov/ — required BEFORE first taxable NY sale. Confirm if already registered." },
+    { id: "task-sans-ny-sales-q1-2026", companyId: "co-sans-001", requirementId: "req-sans-ny-sales-tax", name: "NY sales tax Q1 (Mar–May 2026)", dueDate: "2026-06-20", priority: "High", completed: false, notes: "Quarterly returns due 20th of month after quarter end. NY sales tax year runs 1 Mar – 28 Feb so Q1 = Mar–May." },
+    { id: "task-sans-ny-sales-q2-2026", companyId: "co-sans-001", requirementId: "req-sans-ny-sales-tax", name: "NY sales tax Q2 (Jun–Aug 2026)", dueDate: "2026-09-20", priority: "Medium", completed: false, notes: "Quarterly return." },
+    { id: "task-sans-multistate-nexus-fy26", companyId: "co-sans-001", requirementId: "req-sans-multi-state-nexus", name: "Multi-state nexus review (FY26)", dueDate: "2026-12-31", priority: "Medium", completed: false, notes: "Review Shopify sales-by-state for FY26. Register in any state crossing economic nexus threshold ($100k or 200 transactions/yr in most states)." }
   ]
 };
 
@@ -606,6 +625,29 @@ function runMigrations() {
     }
     persistAll();
     done.push('dbau_bas_agent_concession_v1');
+    try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
+  }
+
+  // Migration: add Sans Ceuticals LLC (Delaware foreign-owned LLC, NY 3PL inventory).
+  // Inserts company + 6 requirements + 10 tasks from REAL_PORTFOLIO. Idempotent.
+  if (!done.includes('add_sans_ceuticals_v1')) {
+    if (!state.companies.some(c => c.id === 'co-sans-001')) {
+      state.companies.push(...REAL_PORTFOLIO.companies.filter(c => c.id === 'co-sans-001').map(c => ({ ...c })));
+    }
+    const existingReqIds = new Set(state.requirements.map(r => r.id));
+    state.requirements.push(
+      ...REAL_PORTFOLIO.requirements
+        .filter(r => r.companyId === 'co-sans-001' && !existingReqIds.has(r.id))
+        .map(r => ({ ...r }))
+    );
+    const existingTaskIds = new Set(state.tasks.map(t => t.id));
+    state.tasks.push(
+      ...REAL_PORTFOLIO.tasks
+        .filter(t => t.companyId === 'co-sans-001' && !existingTaskIds.has(t.id))
+        .map(t => ({ ...t }))
+    );
+    persistAll();
+    done.push('add_sans_ceuticals_v1');
     try { localStorage.setItem(KEYS.migrations, JSON.stringify(done)); } catch (e) {}
   }
 }
